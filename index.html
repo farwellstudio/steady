@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e0f11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Steady">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-512.png">
+<title>Steady Glucose Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: one-column phone app. A status-tinted gradient header (like an album header) over a dark library of cards, with a bottom tab bar. */
+:root{
+  color-scheme: dark;
+  --bg:#0e0f11;
+  --surface:#18191c;
+  --raised:#232428;
+  --line:#2e3035;
+  --text:#f4f5f6;
+  --muted:#a2a5ad;
+  --faint:#6c7079;
+  /* semantic glucose colors */
+  --inrange:#34d17a;
+  --high:#f4b740;
+  --vhigh:#ff8a3d;
+  --low:#ff4d61;
+  --stale:#7d828c;
+  --accent:var(--inrange);
+  --display:"Figtree", "Avenir Next", system-ui, sans-serif;
+  --body:"Figtree", "Avenir Next", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, monospace;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+.app{max-width:540px;margin:0 auto;min-height:100%;position:relative;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+.view{display:none}
+.view.on{display:block}
+
+/* Header */
+.hero{position:relative;padding:calc(18px + env(safe-area-inset-top)) 20px 26px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 46%,#0e0f11) 0%,color-mix(in srgb,var(--accent) 14%,#0e0f11) 62%,var(--bg) 100%);transition:background .6s}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.greet{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.01em}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;background:rgba(0,0,0,.32);font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+.pill.demo .dot{background:#b48cff;box-shadow:0 0 0 3px rgba(180,140,255,.3)}
+.pill.err .dot{background:var(--low)}
+.now{display:flex;align-items:flex-end;gap:14px;margin-top:26px}
+.bg{font-family:var(--display);font-weight:900;font-size:104px;line-height:.86;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+.arrow{font-size:52px;line-height:1;font-weight:700;padding-bottom:6px}
+.nowmeta{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;color:color-mix(in srgb,var(--text) 82%,transparent);font-weight:500}
+.nowmeta b{color:var(--text);font-weight:700}
+.status{font-family:var(--display);font-weight:700;font-size:15px;margin-top:4px;color:var(--text);opacity:.95}
+.chips{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.chip{background:rgba(0,0,0,.30);border-radius:10px;padding:8px 12px;min-width:84px}
+.chip small{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.chip span{font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+
+/* Sections */
+.sec{padding:8px 16px 4px}
+.sech{display:flex;align-items:baseline;justify-content:space-between;margin:18px 4px 10px}
+.sech h2{font-family:var(--display);font-size:20px;font-weight:800;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sech .sub{color:var(--muted);font-size:13px}
+.card{background:var(--surface);border-radius:var(--r);padding:14px}
+.seg{display:flex;gap:6px}
+.seg button{border:0;background:var(--raised);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--text);color:#0e0f11}
+.chartwrap{position:relative;margin-top:10px;touch-action:pan-y}
+svg.chart{display:block;width:100%;height:220px}
+.tip{position:absolute;top:0;transform:translateX(-50%);background:var(--text);color:#0e0f11;font-weight:800;font-size:13px;padding:4px 8px;border-radius:8px;pointer-events:none;white-space:nowrap;display:none;font-variant-numeric:tabular-nums}
+.tip small{font-weight:600;opacity:.7;margin-left:4px}
+
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:var(--surface);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:2px}
+.stat small{color:var(--muted);font-size:12.5px;font-weight:600}
+.stat strong{font-family:var(--display);font-size:28px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat em{font-style:normal;color:var(--faint);font-size:12px}
+.tirbar{display:flex;height:10px;border-radius:6px;overflow:hidden;margin-top:8px;background:var(--raised)}
+.tirbar i{display:block;height:100%}
+
+.list{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:9px 4px;border-radius:10px}
+.tile{width:48px;height:48px;border-radius:8px;display:grid;place-items:center;flex:none;font-weight:800;font-size:13px;color:#0e0f11}
+.row .t{flex:1;min-width:0}
+.row .t b{display:block;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .t span{color:var(--muted);font-size:13px}
+.row .r{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.empty{color:var(--muted);padding:14px 4px;font-size:14px}
+
+/* Days */
+.days{display:flex;flex-direction:column;gap:8px}
+.day{display:grid;grid-template-columns:62px 1fr 48px;align-items:center;gap:10px;background:var(--surface);border-radius:12px;padding:12px}
+.day b{font-weight:700}
+.day small{display:block;color:var(--muted);font-size:12px}
+.day .pct{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+
+/* Connections */
+.conn{background:var(--surface);border-radius:var(--r);overflow:hidden}
+.conn+.conn{margin-top:10px}
+.conn summary{list-style:none;display:flex;align-items:center;gap:12px;padding:12px;cursor:pointer}
+.conn summary::-webkit-details-marker{display:none}
+.conn .t{flex:1;min-width:0}
+.conn .t b{display:block;font-weight:700}
+.conn .t span{color:var(--muted);font-size:13px}
+.badge{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap;background:var(--raised);color:var(--muted)}
+.badge.ok{background:color-mix(in srgb,var(--inrange) 20%,transparent);color:var(--inrange)}
+.badge.warn{background:color-mix(in srgb,var(--high) 20%,transparent);color:var(--high)}
+.connbody{padding:0 14px 14px 14px;color:#d6d8dc;font-size:14px}
+.connbody ol{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.connbody code,.mono{font-family:var(--mono);font-size:12.5px;background:var(--raised);padding:2px 6px;border-radius:6px;word-break:break-all}
+.copyline{display:flex;gap:8px;align-items:center;margin-top:10px}
+.copyline .mono{flex:1;padding:9px 10px}
+.btn{border:0;border-radius:999px;padding:10px 18px;font-weight:800;cursor:pointer;background:var(--text);color:#0e0f11}
+.btn.ghost{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.sm{padding:7px 13px;font-size:13px}
+.btn.accent{background:var(--inrange)}
+
+/* Settings */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-weight:700;font-size:14px}
+.field .hint{color:var(--muted);font-size:12.5px}
+.field input,.field select{background:var(--raised);border:1.5px solid transparent;border-radius:10px;padding:11px 12px;width:100%}
+.field input:focus{border-color:var(--text);outline:none}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border-radius:12px;padding:12px 14px;margin-bottom:14px}
+.toggle input{width:44px;height:26px;appearance:none;background:var(--raised);border-radius:999px;position:relative;cursor:pointer;flex:none;transition:background .2s}
+.toggle input::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:transform .2s,background .2s}
+.toggle input:checked{background:var(--inrange)}
+.toggle input:checked::after{transform:translateX(18px);background:#0e0f11}
+.msg{border-radius:12px;padding:12px 14px;font-size:14px;margin:4px 0 14px;display:none}
+.msg.show{display:block}
+.msg.ok{background:color-mix(in srgb,var(--inrange) 16%,var(--surface))}
+.msg.bad{background:color-mix(in srgb,var(--low) 16%,var(--surface))}
+.note{color:var(--muted);font-size:12.5px;padding:18px 20px 8px;text-align:left}
+
+/* Tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:linear-gradient(180deg,rgba(14,15,17,.0),rgba(14,15,17,.92) 30%,#0e0f11);padding:14px 0 calc(8px + env(safe-area-inset-bottom))}
+.tabs nav{max-width:540px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;padding:4px 0}
+.tabs button svg{width:24px;height:24px}
+.tabs button[aria-current="page"]{color:var(--text)}
+.plainhead{padding:calc(22px + env(safe-area-inset-top)) 20px 4px}
+.plainhead h1{font-family:var(--display);font-weight:900;font-size:30px;letter-spacing:-.02em;margin:0}
+.plainhead p{color:var(--muted);margin:4px 0 0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- NOW -->
+  <section class="view on" id="v-now" aria-label="Now">
+    <header class="hero">
+      <div class="topbar">
+        <div class="greet" id="greet">Good morning</div>
+        <div class="pill" id="srcpill"><span class="dot"></span><span id="srctext">Demo data</span></div>
+      </div>
+      <div class="now">
+        <div class="bg" id="bg">--</div>
+        <div class="arrow" id="arrow" aria-label="trend"></div>
+      </div>
+      <div class="status" id="status">Waiting for data</div>
+      <div class="nowmeta"><span><b id="delta">--</b> change</span><span id="ago">--</span><span id="unitlbl">mg/dL</span></div>
+      <div class="chips" id="chips"></div>
+    </header>
+
+    <div class="sec">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <h2 style="font-family:var(--display);font-size:17px;margin:0;font-weight:800">Glucose</h2>
+          <div class="seg" id="hours" role="group" aria-label="Chart range">
+            <button data-h="3" aria-pressed="true">3h</button><button data-h="6" aria-pressed="false">6h</button><button data-h="12" aria-pressed="false">12h</button><button data-h="24" aria-pressed="false">24h</button>
+          </div>
+        </div>
+        <div class="chartwrap" id="chartwrap">
+          <svg class="chart" id="chart" role="img" aria-label="Glucose chart"></svg>
+          <div class="tip" id="tip"></div>
+        </div>
+      </div>
+
+      <div class="sech"><h2>Last 24 hours</h2><span class="sub" id="rangelbl">Target 70–180</span></div>
+      <div class="stats" id="stats"></div>
+
+      <div class="sech"><h2>Recent</h2><span class="sub">Carbs, insulin, notes</span></div>
+      <div class="list" id="recent"></div>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="view" id="v-hist" aria-label="History">
+    <div class="plainhead"><h1>History</h1><p>Time in range, day by day</p></div>
+    <div class="sec">
+      <div class="sech"><h2>Last 7 days</h2><span class="sub" id="wk-sub"></span></div>
+      <div class="stats" id="wkstats"></div>
+      <div class="sech"><h2>Each day</h2><span class="sub">low · in range · high</span></div>
+      <div class="days" id="days"></div>
+    </div>
+  </section>
+
+  <!-- CONNECTIONS -->
+  <section class="view" id="v-conn" aria-label="Connections">
+    <div class="plainhead"><h1>Connections</h1><p>Apps sending to or reading from your Nightscout</p></div>
+    <div class="sec" id="connlist" style="margin-top:10px"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="view" id="v-set" aria-label="Settings">
+    <div class="plainhead"><h1>Settings</h1><p>Point Steady at your Nightscout site</p></div>
+    <form class="sec" id="setform" style="margin-top:12px" autocomplete="off">
+      <div class="toggle"><div><b>Demo mode</b><div class="field hint" style="margin:0">Shows sample data. Turn off to use your site.</div></div><input type="checkbox" id="s-demo" aria-label="Demo mode"></div>
+      <div class="field">
+        <label for="s-url">Nightscout URL</label>
+        <input id="s-url" type="url" inputmode="url" placeholder="https://yoursite.example.com" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="s-token">Access token</label>
+        <input id="s-token" type="text" placeholder="steady-1a2b3c4d5e6f7a8b" spellcheck="false">
+        <span class="hint">Make a token with the <b>readable</b> role in Nightscout Admin Tools. Never paste your API_SECRET here.</span>
+      </div>
+      <div class="two">
+        <div class="field"><label for="s-units">Units</label><select id="s-units"><option value="mgdl">mg/dL</option><option value="mmol">mmol/L</option></select></div>
+        <div class="field"><label for="s-refresh">Refresh</label><select id="s-refresh"><option value="60">Every minute</option><option value="120">Every 2 min</option><option value="300">Every 5 min</option></select></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="s-low">Target low</label><input id="s-low" type="number" inputmode="numeric" min="50" max="120"></div>
+        <div class="field"><label for="s-high">Target high</label><input id="s-high" type="number" inputmode="numeric" min="120" max="300"></div>
+      </div>
+      <div class="msg" id="s-msg" role="status"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn accent" type="submit">Save and connect</button>
+        <button class="btn ghost" type="button" id="s-test">Test connection</button>
+      </div>
+      <p class="note" style="padding-left:0">Steady is a viewer. Keep your Dexcom app and its alarms on for treatment decisions and alerts. Targets here are entered in mg/dL.</p>
+    </form>
+  </section>
+</div>
+
+<div class="tabs">
+  <nav aria-label="Main">
+    <button data-v="now" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Now</button>
+    <button data-v="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>History</button>
+    <button data-v="conn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Connections</button>
+    <button data-v="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+  </nav>
+</div>
+
+<script>
+(function(){
+"use strict";
+const MIN = 60e3, HR = 60*MIN, DAY = 24*HR;
+const ARROWS = {DoubleUp:"⇈",SingleUp:"↑",FortyFiveUp:"↗",Flat:"→",FortyFiveDown:"↘",SingleDown:"↓",DoubleDown:"⇊","NOT COMPUTABLE":"",NONE:""};
+const TREND_WORDS = {DoubleUp:"rising fast",SingleUp:"rising",FortyFiveUp:"rising slowly",Flat:"steady",FortyFiveDown:"falling slowly",SingleDown:"falling",DoubleDown:"falling fast"};
+
+// ---------- settings ----------
+const DEFAULTS = {demo:true,url:"",token:"",units:"mgdl",refresh:60,low:70,high:180};
+function loadSettings(){ try{ return Object.assign({},DEFAULTS,JSON.parse(localStorage.getItem("steady.settings")||"{}")); }catch(e){ return Object.assign({},DEFAULTS); } }
+function saveSettings(s){ try{ localStorage.setItem("steady.settings",JSON.stringify(s)); }catch(e){} }
+let S = loadSettings();
+let state = {entries:[],treatments:[],devicestatus:null,source:"demo",error:null,hours:3,lastFetch:0};
+
+// ---------- helpers ----------
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = mg => S.units==="mmol" ? (mg/18.0182).toFixed(1) : String(Math.round(mg));
+const fmtDelta = d => { if(d==null||isNaN(d)) return "--"; const v = S.units==="mmol" ? (d/18.0182).toFixed(1) : Math.round(d); return (d>0?"+":d<0?"":"±")+v; };
+function band(mg){ if(mg<54) return "vlow"; if(mg<S.low) return "low"; if(mg<=S.high) return "in"; if(mg<=250) return "high"; return "vhigh"; }
+const BAND_COLOR = {vlow:"var(--low)",low:"var(--low)",in:"var(--inrange)",high:"var(--high)",vhigh:"var(--vhigh)"};
+const BAND_HEX = {vlow:"#ff4d61",low:"#ff4d61",in:"#34d17a",high:"#f4b740",vhigh:"#ff8a3d"};
+function ago(ms){ const m = Math.round((Date.now()-ms)/MIN); if(m<1) return "just now"; if(m<60) return m+" min ago"; const h=Math.floor(m/60); return h+" h "+(m%60)+" min ago"; }
+function timeStr(ms){ return new Date(ms).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }
+function greeting(){ const h=new Date().getHours(); return h<5?"Good night":h<12?"Good morning":h<17?"Good afternoon":"Good evening"; }
+
+// ---------- demo data ----------
+function demoData(){
+  const now = Date.now(), start = now - 7*DAY;
+  let seed = 7; const rnd = () => (seed = (seed*16807)%2147483647)/2147483647;
+  const meals = [];
+  for(let d=0; d<8; d++){
+    const base = new Date(start + d*DAY); base.setHours(0,0,0,0);
+    [[7.6,45,5.5],[12.5,60,6.5],[18.7,70,7.5]].forEach(([h,c,u])=>{
+      const t = base.getTime() + h*HR + (rnd()-.5)*50*MIN;
+      if(t>start && t<now) meals.push({t,carbs:Math.round(c*(.7+rnd()*.6)),ins:+(u*(.75+rnd()*.5)).toFixed(1)});
+    });
+  }
+  const entries = [];
+  let drift = 0;
+  for(let t = start; t <= now; t += 5*MIN){
+    drift += (rnd()-.5)*4; drift *= .97;
+    const h = new Date(t).getHours() + new Date(t).getMinutes()/60;
+    let g = 118 + 14*Math.sin((h-4)/24*2*Math.PI) + drift;
+    if(h>3 && h<7) g += 12*Math.sin((h-3)/4*Math.PI); // dawn
+    meals.forEach(m=>{ const dt=(t-m.t)/HR; if(dt>0 && dt<4.5){ g += m.carbs*1.6*Math.exp(-Math.pow((dt-1.1)/0.75,2)) - m.ins*7*Math.max(0,Math.sin(Math.min(dt,3)/3*Math.PI))*.35; } });
+    entries.push({date:t, sgv:Math.max(48,Math.min(360,Math.round(g)))});
+  }
+  // trend directions
+  for(let i=entries.length-1;i>=0;i--){ const p = entries[i-3]; entries[i].direction = p ? dirFor((entries[i].sgv-p.sgv)/15) : "Flat"; }
+  entries.reverse();
+  const treatments = [];
+  meals.filter(m=>m.t>now-2*DAY).forEach(m=>{
+    treatments.push({created_at:new Date(m.t).toISOString(),eventType:"Meal Bolus",carbs:m.carbs,insulin:m.ins,enteredBy:"Loop"});
+  });
+  treatments.push({created_at:new Date(now-150*MIN).toISOString(),eventType:"Note",notes:"PT session, 45 min",enteredBy:"Steady"});
+  treatments.push({created_at:new Date(now-26*HR).toISOString(),eventType:"Sensor Change",enteredBy:"Dexcom"});
+  treatments.sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at));
+  const devicestatus = {created_at:new Date(now-3*MIN).toISOString(),device:"loop://iPhone",loop:{iob:{iob:1.84},cob:{cob:12},timestamp:new Date(now-3*MIN).toISOString()},pump:{reservoir:96.5,battery:{percent:72}},uploader:{battery:81}};
+  return {entries,treatments,devicestatus};
+}
+function dirFor(rate){ // mg/dL per min
+  if(rate>3) return "DoubleUp"; if(rate>2) return "SingleUp"; if(rate>1) return "FortyFiveUp";
+  if(rate<-3) return "DoubleDown"; if(rate<-2) return "SingleDown"; if(rate<-1) return "FortyFiveDown"; return "Flat";
+}
+
+// ---------- Nightscout API ----------
+function nsUrl(path, params){
+  const base = S.url.replace(/\/+$/,"");
+  const q = new URLSearchParams(params||{});
+  if(S.token) q.set("token", S.token.trim());
+  return base + path + (q.toString() ? "?"+q.toString() : "");
+}
+async function getJSON(path, params){
+  let res;
+  try{ res = await fetch(nsUrl(path,params), {headers:{Accept:"application/json"}, cache:"no-store"}); }
+  catch(e){ throw new Error("Couldn't reach your site. Check the URL, and that cors is in your Nightscout ENABLE list."); }
+  if(res.status===401) throw new Error("Your site refused the token (401). Check it has the readable role.");
+  if(res.status>=500) throw new Error("Your Nightscout server returned HTTP "+res.status+". The server itself is having trouble.");
+  if(!res.ok) throw new Error("Nightscout returned HTTP "+res.status+" for "+path+".");
+  return res.json();
+}
+async function fetchLive(){
+  const since = Date.now() - 7*DAY;
+  const [entries, treatments, ds] = await Promise.all([
+    getJSON("/api/v1/entries/sgv.json", {"count":"2100","find[date][$gte]":String(since)}),
+    getJSON("/api/v1/treatments.json", {"count":"60","find[created_at][$gte]":new Date(Date.now()-2*DAY).toISOString()}),
+    getJSON("/api/v1/devicestatus.json", {"count":"5"})
+  ]);
+  return {
+    entries: entries.filter(e=>e.sgv).map(e=>({date:e.date||Date.parse(e.dateString),sgv:+e.sgv,direction:e.direction,device:e.device})).sort((a,b)=>b.date-a.date),
+    treatments,
+    devicestatus: ds,
+    allStatus: ds
+  };
+}
+
+async function refresh(){
+  if(S.demo || !S.url){
+    Object.assign(state, demoData(), {source:"demo", error:null});
+  } else {
+    try{ const d = await fetchLive(); const ds = Array.isArray(d.devicestatus)? d.devicestatus : [];
+      Object.assign(state, {entries:d.entries, treatments:d.treatments, devicestatus: ds.find(x=>x.loop||x.openaps) || ds[0] || null, statuses: ds, source:"live", error:null});
+    } catch(e){ state.error = e.message; state.source="error"; }
+  }
+  state.lastFetch = Date.now();
+  render();
+}
+
+// ---------- rendering ----------
+function render(){
+  $("greet").textContent = greeting();
+  const pill = $("srcpill"); pill.className = "pill" + (state.source==="demo"?" demo":state.source==="error"?" err":"");
+  $("srctext").textContent = state.source==="demo" ? "Demo data" : state.source==="error" ? "Connection problem" : "Live";
+  $("unitlbl").textContent = S.units==="mmol"?"mmol/L":"mg/dL";
+  $("rangelbl").textContent = "Target " + fmt(S.low) + "–" + fmt(S.high);
+  renderNow(); renderChart(); renderStats(); renderRecent(); renderHistory(); renderConnections();
+}
+
+function renderNow(){
+  const e = state.entries; const cur = e[0];
+  const root = document.documentElement;
+  if(state.source==="error" && !cur){
+    root.style.setProperty("--accent","var(--stale)");
+    $("bg").textContent = "--"; $("arrow").textContent = ""; $("status").textContent = state.error;
+    $("delta").textContent = "--"; $("ago").textContent = ""; $("chips").innerHTML = ""; return;
+  }
+  if(!cur){ $("status").textContent = "No readings yet"; return; }
+  const stale = Date.now()-cur.date > 15*MIN;
+  const b = band(cur.sgv);
+  root.style.setProperty("--accent", stale ? "var(--stale)" : BAND_COLOR[b]);
+  $("bg").textContent = fmt(cur.sgv);
+  $("arrow").textContent = stale ? "" : (ARROWS[cur.direction]||"");
+  $("arrow").setAttribute("aria-label", TREND_WORDS[cur.direction]||"trend unknown");
+  const prev = e.find(x=>x.date <= cur.date-4*MIN && x.date >= cur.date-11*MIN);
+  $("delta").textContent = prev ? fmtDelta(cur.sgv-prev.sgv) : "--";
+  $("ago").textContent = ago(cur.date);
+  const words = {vlow:"Urgent low",low:"Low",in:"In range",high:"High",vhigh:"Very high"}[b];
+  $("status").textContent = stale ? "No new reading for "+Math.round((Date.now()-cur.date)/MIN)+" min" : words + (TREND_WORDS[cur.direction] ? " and " + TREND_WORDS[cur.direction] : "");
+  if(state.error) $("status").textContent += " · " + state.error;
+  // chips from devicestatus
+  const ds = state.devicestatus; const chips = [];
+  if(ds){
+    const iob = ds.loop?.iob?.iob ?? (Array.isArray(ds.openaps?.iob)? ds.openaps.iob[0]?.iob : ds.openaps?.iob?.iob);
+    const cob = ds.loop?.cob?.cob ?? ds.openaps?.suggested?.COB ?? ds.openaps?.enacted?.COB;
+    if(iob!=null) chips.push(["Insulin on board", (+iob).toFixed(2)+" U"]);
+    if(cob!=null) chips.push(["Carbs on board", Math.round(cob)+" g"]);
+    const res = ds.pump?.reservoir; if(res!=null) chips.push(["Reservoir", Math.round(res)+" U"]);
+    const lp = ds.loop?.timestamp || ds.openaps?.enacted?.timestamp || ds.created_at;
+    if(lp && (ds.loop||ds.openaps)) chips.push([ds.loop?"Loop":"Trio / OpenAPS", Math.round((Date.now()-Date.parse(lp))/MIN)+" min ago"]);
+  }
+  $("chips").innerHTML = chips.map(([k,v])=>`<div class="chip"><small>${esc(k)}</small><span>${esc(v)}</span></div>`).join("");
+}
+
+function renderChart(){
+  const svg = $("chart"); const W = svg.clientWidth || 500, H = 220, padL = 30, padR = 8, padT = 22, padB = 22;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const now = Date.now(), t0 = now - state.hours*HR;
+  const pts = state.entries.filter(e=>e.date>=t0).slice().reverse();
+  const yMax = Math.max(300, ...pts.map(p=>p.sgv)), yMin = 40;
+  const x = t => padL + (t-t0)/(now-t0)*(W-padL-padR);
+  const y = v => padT + (1-(Math.min(v,yMax)-yMin)/(yMax-yMin))*(H-padT-padB);
+  let s = "";
+  // target band
+  s += `<rect x="${padL}" y="${y(S.high)}" width="${W-padL-padR}" height="${y(S.low)-y(S.high)}" fill="#34d17a" opacity=".08" rx="4"/>`;
+  [S.low,S.high].forEach(v=>{ s += `<line x1="${padL}" x2="${W-padR}" y1="${y(v)}" y2="${y(v)}" stroke="#34d17a" stroke-opacity=".35" stroke-dasharray="3 4"/>`; });
+  // y labels
+  [S.low,S.high,yMax>=300?300:Math.round(yMax)].forEach(v=>{ s += `<text x="${padL-6}" y="${y(v)+4}" text-anchor="end" fill="#6c7079" font-size="10.5" font-family="Figtree, system-ui, sans-serif">${fmt(v)}</text>`; });
+  // x labels
+  const step = state.hours<=3?HR:state.hours<=6?2*HR:state.hours<=12?3*HR:6*HR;
+  let tick = Math.ceil(t0/step)*step;
+  for(; tick<now; tick+=step){ const d=new Date(tick); const lbl = d.toLocaleTimeString([], {hour:"numeric"}); s += `<line x1="${x(tick)}" x2="${x(tick)}" y1="${padT}" y2="${H-padB}" stroke="#2e3035" stroke-width="1"/><text x="${x(tick)}" y="${H-6}" text-anchor="middle" fill="#6c7079" font-size="10.5" font-family="Figtree, system-ui, sans-serif">${lbl}</text>`; }
+  // treatments markers
+  state.treatments.forEach(tr=>{ const t = Date.parse(tr.created_at); if(t<t0) return; if(tr.carbs){ s += `<circle cx="${x(t)}" cy="${padT-10}" r="4" fill="#f4b740"/>`; } if(tr.insulin){ s += `<rect x="${x(t)-3.5}" y="${padT-14}" width="7" height="7" rx="1.5" fill="#6fa8ff" transform="translate(${tr.carbs?9:0},0)"/>`; } });
+  // area + line
+  if(pts.length){
+    const line = pts.map((p,i)=>(i?"L":"M")+x(p.date).toFixed(1)+" "+y(p.sgv).toFixed(1)).join("");
+    s += `<defs><linearGradient id="ga" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#f4f5f6" stop-opacity=".16"/><stop offset="1" stop-color="#f4f5f6" stop-opacity="0"/></linearGradient></defs>`;
+    s += `<path d="${line}L${x(pts[pts.length-1].date).toFixed(1)} ${H-padB}L${x(pts[0].date).toFixed(1)} ${H-padB}Z" fill="url(#ga)"/>`;
+    const r = state.hours<=6?2.6:state.hours<=12?2:1.6;
+    s += pts.map(p=>`<circle cx="${x(p.date).toFixed(1)}" cy="${y(p.sgv).toFixed(1)}" r="${r}" fill="${BAND_HEX[band(p.sgv)]}"/>`).join("");
+    const last = pts[pts.length-1];
+    s += `<circle cx="${x(last.date)}" cy="${y(last.sgv)}" r="6" fill="none" stroke="#f4f5f6" stroke-width="2"/>`;
+  } else {
+    s += `<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#a2a5ad" font-size="13" font-family="Figtree, system-ui, sans-serif">No readings in this window</text>`;
+  }
+  s += `<line id="cursor" x1="0" x2="0" y1="${padT}" y2="${H-padB}" stroke="#f4f5f6" stroke-opacity=".5" visibility="hidden"/>`;
+  svg.innerHTML = s;
+  // scrub
+  const wrap = $("chartwrap"), tip = $("tip");
+  wrap.onpointermove = wrap.onpointerdown = ev => {
+    const rect = svg.getBoundingClientRect(); const px = (ev.clientX-rect.left)/rect.width*W;
+    const t = t0 + (px-padL)/(W-padL-padR)*(now-t0);
+    let best=null, bd=Infinity; pts.forEach(p=>{ const d=Math.abs(p.date-t); if(d<bd){bd=d;best=p;} });
+    if(!best || bd>15*MIN){ tip.style.display="none"; return; }
+    const cx = x(best.date)/W*rect.width;
+    tip.style.display="block"; tip.style.left = Math.max(40,Math.min(rect.width-40,cx))+"px";
+    tip.innerHTML = `${fmt(best.sgv)}<small>${timeStr(best.date)}</small>`;
+    const c = svg.querySelector("#cursor"); c.setAttribute("x1",x(best.date)); c.setAttribute("x2",x(best.date)); c.setAttribute("visibility","visible");
+  };
+  wrap.onpointerleave = () => { tip.style.display="none"; const c = svg.querySelector("#cursor"); if(c) c.setAttribute("visibility","hidden"); };
+}
+
+function summarize(list){
+  if(!list.length) return null;
+  const n = list.length, mean = list.reduce((a,b)=>a+b.sgv,0)/n;
+  const c = {vlow:0,low:0,in:0,high:0,vhigh:0}; list.forEach(e=>c[band(e.sgv)]++);
+  const sd = Math.sqrt(list.reduce((a,b)=>a+(b.sgv-mean)**2,0)/n);
+  return {n,mean,sd,cv:sd/mean*100,gmi:3.31+0.02392*mean,
+    below:(c.vlow+c.low)/n*100, inr:c.in/n*100, above:(c.high+c.vhigh)/n*100, vlow:c.vlow/n*100};
+}
+function tirBar(s){ return `<div class="tirbar" aria-hidden="true"><i style="width:${s.below}%;background:var(--low)"></i><i style="width:${s.inr}%;background:var(--inrange)"></i><i style="width:${s.above}%;background:var(--high)"></i></div>`; }
+function statCards(s, el){
+  if(!s){ $(el).innerHTML = `<div class="empty">Not enough readings yet.</div>`; return; }
+  $(el).innerHTML = `
+    <div class="stat" style="grid-column:1/-1"><small>Time in range</small><strong>${Math.round(s.inr)}%</strong>${tirBar(s)}<em>${s.below.toFixed(1)}% low · ${s.above.toFixed(0)}% high</em></div>
+    <div class="stat"><small>Average</small><strong>${fmt(s.mean)}</strong><em>${S.units==="mmol"?"mmol/L":"mg/dL"}</em></div>
+    <div class="stat"><small>GMI</small><strong>${s.gmi.toFixed(1)}%</strong><em>estimated A1c</em></div>
+    <div class="stat"><small>Variability (CV)</small><strong>${Math.round(s.cv)}%</strong><em>under 36% is the goal</em></div>
+    <div class="stat"><small>Readings</small><strong>${s.n}</strong><em>of ${state._expected||288} expected</em></div>`;
+}
+function renderStats(){
+  const t0 = Date.now()-DAY; state._expected = 288;
+  statCards(summarize(state.entries.filter(e=>e.date>=t0)), "stats");
+}
+function renderRecent(){
+  const items = state.treatments.slice(0,8);
+  if(!items.length){ $("recent").innerHTML = `<div class="empty">Nothing logged in the last two days.</div>`; return; }
+  $("recent").innerHTML = items.map(tr=>{
+    const t = Date.parse(tr.created_at);
+    let title = tr.eventType || "Entry", sub = tr.enteredBy ? "from "+tr.enteredBy : "", tile = "#a2a5ad", lbl = "•";
+    if(tr.carbs && tr.insulin){ title = tr.carbs+" g carbs · "+tr.insulin+" U"; tile="#f4b740"; lbl="MEAL"; }
+    else if(tr.carbs){ title = tr.carbs+" g carbs"; tile="#f4b740"; lbl="CARB"; }
+    else if(tr.insulin){ title = tr.insulin+" U insulin"; tile="#6fa8ff"; lbl="BOL"; }
+    else if(/sensor/i.test(title)){ tile="#b48cff"; lbl="CGM"; }
+    else if(tr.notes){ title = tr.notes; sub = (tr.eventType||"Note")+(tr.enteredBy?" · "+tr.enteredBy:""); tile="#5fd4c4"; lbl="NOTE"; }
+    return `<div class="row"><div class="tile" style="background:${tile}">${lbl}</div><div class="t"><b>${esc(title)}</b><span>${esc(sub)}</span></div><div class="r">${timeStr(t)}</div></div>`;
+  }).join("");
+}
+function renderHistory(){
+  const now = Date.now(); const wk = state.entries.filter(e=>e.date>=now-7*DAY);
+  const s = summarize(wk);
+  $("wk-sub").textContent = s ? s.n+" readings" : "";
+  state._expected = 2016; statCards(s,"wkstats"); state._expected = 288;
+  const days = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(now); d.setHours(0,0,0,0); d.setDate(d.getDate()-i);
+    const a = d.getTime(), b = a+DAY;
+    const ds = summarize(state.entries.filter(e=>e.date>=a && e.date<b));
+    if(ds) days.push({d,ds});
+  }
+  $("days").innerHTML = days.map(({d,ds},i)=>`<div class="day"><div><b>${i===0?"Today":d.toLocaleDateString([], {weekday:"short"})}</b><small>${d.toLocaleDateString([], {month:"short",day:"numeric"})}</small></div><div>${tirBar(ds)}<small style="color:var(--muted);font-size:12px">avg ${fmt(ds.mean)} · ${ds.n} readings</small></div><div class="pct">${Math.round(ds.inr)}%</div></div>`).join("") || `<div class="empty">No history yet.</div>`;
+}
+
+// ---------- connections ----------
+function seen(ms){ return ms ? "Seen "+ago(ms) : null; }
+function renderConnections(){
+  const cur = state.entries[0];
+  const ds = state.devicestatus;
+  const statuses = state.statuses || (ds?[ds]:[]);
+  const loopDs = statuses.find(x=>x.loop) , apsDs = statuses.find(x=>x.openaps);
+  const site = S.url ? S.url.replace(/\/+$/,"") : "https://your-nightscout-site";
+  const cgmSeen = cur && Date.now()-cur.date < 20*MIN;
+  const items = [
+    {tile:"#34d17a",lbl:"CGM",name:"Dexcom readings",desc:"Into Nightscout through the Share bridge",
+      status: cur ? (cgmSeen?["ok",seen(cur.date)]:["warn","Last reading "+ago(cur.date)]) : ["","Not connected"],
+      body:`<ol><li>Turn on <b>Share</b> in the Dexcom app and add at least one follower.</li><li>In your Nightscout server settings add <code>bridge</code> to <code>ENABLE</code>.</li><li>Set <code>BRIDGE_USER_NAME</code> and <code>BRIDGE_PASSWORD</code> to your Dexcom login, and <code>BRIDGE_SERVER</code> to <code>US</code>.</li><li>Skip this if Loop or Trio already uploads your readings, so you don't get duplicates.</li></ol>`},
+    {tile:"#6fa8ff",lbl:"LOOP",name:"Loop or Trio",desc:"Doses, carbs, insulin and carbs on board",
+      status: loopDs? ["ok",seen(Date.parse(loopDs.created_at))] : apsDs? ["ok",seen(Date.parse(apsDs.created_at))] : ["","Not seen yet"],
+      body:`<ol><li>In Loop: Settings → Services → Nightscout. In Trio: Settings → Services → Nightscout.</li><li>Enter <code>${esc(site)}</code> and your <b>API_SECRET</b> (uploaders need it to write).</li><li>Once it uploads, insulin on board and carbs on board appear on the Now screen.</li></ol>`},
+    {tile:"#f4b740",lbl:"APPS",name:"Follower apps",desc:"LoopFollow, xDrip4iOS, Nightguard, Sugarmate",
+      status:["","Ready"],
+      body:`<ol><li>Create a token with the <b>readable</b> role in Admin Tools, one per person or app, for example <code>emily-phone</code>.</li><li>In the app, enter your site URL and that token.</li></ol><div class="copyline"><span class="mono" id="siteurl">${esc(site)}</span><button class="btn sm" type="button" data-copy="siteurl">Copy</button></div>`},
+    {tile:"#ff6b8a",lbl:"HLTH",name:"Apple Health and Watch",desc:"Glucose next to steps, workouts and sleep",
+      status:["","On iPhone"],
+      body:`<ol><li>Dexcom app: Settings → Apple Health → turn on. This writes glucose to Health with about a 3-hour delay.</li><li>Loop and Trio write insulin and carbs to Health when you allow it in their Health permissions.</li><li>For live readings on your watch face, keep the Dexcom watch app. A follower app like LoopFollow can add a complication if you want a second one.</li></ol>`},
+    {tile:"#5fd4c4",lbl:"AUTO",name:"Alerts and automations",desc:"IFTTT, Pushover, Home Assistant",
+      status:["","Optional"],
+      body:`<ol><li><b>Pushover</b>: add <code>pushover</code> to <code>ENABLE</code> and set <code>PUSHOVER_API_TOKEN</code> and <code>PUSHOVER_USER_KEY</code>. Good for sending alarms to Emily too.</li><li><b>IFTTT</b>: add <code>maker</code> to <code>ENABLE</code> and set <code>MAKER_KEY</code>. Nightscout alarms then trigger IFTTT applets, like flashing a smart light.</li><li><b>Home Assistant</b>: add the Nightscout integration with your site URL and a readable token.</li></ol>`},
+    {tile:"#b48cff",lbl:"WEB",name:"This app",desc:"Steady reads your site with a token",
+      status: state.source==="live"?["ok","Connected"]:state.source==="error"?["warn","Problem"]:["","Demo mode"],
+      body:`<ol><li>Add <code>cors</code> to <code>ENABLE</code> on your server so a web app on another address can read it.</li><li>Put your site URL and a readable token in Settings.</li><li>On iPhone, open Steady in Safari, tap Share → Add to Home Screen.</li></ol>`}
+  ];
+  $("connlist").innerHTML = items.map(it=>`<details class="conn"><summary><div class="tile" style="background:${it.tile}">${it.lbl}</div><div class="t"><b>${esc(it.name)}</b><span>${esc(it.desc)}</span></div><span class="badge ${it.status[0]}">${esc(it.status[1])}</span></summary><div class="connbody">${it.body}</div></details>`).join("");
+  $("connlist").querySelectorAll("[data-copy]").forEach(b=>b.onclick = async ()=>{ try{ await navigator.clipboard.writeText($(b.dataset.copy).textContent); b.textContent="Copied"; }catch(e){ b.textContent="Select and copy"; } setTimeout(()=>b.textContent="Copy",1600); });
+}
+
+// ---------- settings UI ----------
+function fillForm(){ $("s-demo").checked=S.demo; $("s-url").value=S.url; $("s-token").value=S.token; $("s-units").value=S.units; $("s-refresh").value=String(S.refresh); $("s-low").value=S.low; $("s-high").value=S.high; }
+function readForm(){ return {demo:$("s-demo").checked, url:$("s-url").value.trim(), token:$("s-token").value.trim(), units:$("s-units").value, refresh:+$("s-refresh").value, low:Math.max(50,Math.min(120,+$("s-low").value||70)), high:Math.max(120,Math.min(300,+$("s-high").value||180))}; }
+function showMsg(ok, text){ const m=$("s-msg"); m.className="msg show "+(ok?"ok":"bad"); m.textContent=text; }
+$("s-test").onclick = async ()=>{
+  const f = readForm(); if(!f.url){ showMsg(false,"Enter your Nightscout URL first."); return; }
+  const keep = S; S = Object.assign({},S,f);
+  try{ const st = await getJSON("/api/v1/status.json"); const e = await getJSON("/api/v1/entries/sgv.json",{count:"1"});
+    showMsg(true, `Connected to ${st.name||"Nightscout"} ${st.version||""}. Latest reading ${e[0]?fmt(e[0].sgv)+", "+ago(e[0].date):"not found"}.`);
+  }catch(err){ showMsg(false, err.message); }
+  S = keep;
+};
+$("setform").onsubmit = ev => { ev.preventDefault(); const f = readForm(); if(!f.demo && !f.url){ showMsg(false,"Enter your Nightscout URL, or turn demo mode back on."); return; } S = f; saveSettings(S); showMsg(true, S.demo ? "Saved. Showing demo data." : "Saved. Loading your data."); restartTimer(); refresh(); };
+
+// ---------- nav ----------
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.removeAttribute("aria-current")); b.setAttribute("aria-current","page");
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("on")); $("v-"+b.dataset.v).classList.add("on");
+  if(b.dataset.v==="now") renderChart();
+  window.scrollTo(0,0);
+});
+document.querySelectorAll("#hours button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#hours button").forEach(x=>x.setAttribute("aria-pressed","false")); b.setAttribute("aria-pressed","true");
+  state.hours = +b.dataset.h; renderChart();
+});
+window.addEventListener("resize", ()=>renderChart());
+let timer=null; function restartTimer(){ clearInterval(timer); timer=setInterval(()=>{ if(!document.hidden) refresh(); }, S.refresh*1000); }
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && Date.now()-state.lastFetch>30e3) refresh(); });
+setInterval(()=>{ if(state.entries[0]) $("ago").textContent = ago(state.entries[0].date); }, 20e3);
+
+fillForm(); restartTimer(); refresh();
+})();
+</script>
+</body>
+</html>
