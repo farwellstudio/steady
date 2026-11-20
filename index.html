@@ -162,13 +162,28 @@ body:not(.on-now) .fab{display:none}
 .results{display:flex;flex-direction:column;margin-top:6px;max-height:260px;overflow:auto}
 .results button.row{border:0;background:none;text-align:left;width:100%;cursor:pointer;color:var(--text)}
 .results button.row:hover,.list button.row:hover{background:var(--raised)}
-.list button.row{border:0;background:none;text-align:left;width:100%;cursor:pointer;color:var(--text)}
+.list button.row,#recent button.row{border:0;background:none;text-align:left;width:100%;cursor:pointer;color:var(--text)}
 .picked{display:flex;align-items:center;gap:12px;background:var(--raised);border-radius:14px;padding:10px 12px}
 .picked .t{flex:1;min-width:0}.picked .t b{display:block}.picked .t span{color:var(--muted);font-size:13px}
 .stepper{display:flex;align-items:center;gap:6px}
 .stepper button{width:36px;height:36px;border-radius:50%;border:0;background:var(--surface);font-size:20px;font-weight:800;cursor:pointer;color:var(--text)}
 .stepper output{min-width:42px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
 .grouph{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:16px 4px 4px}
+.items{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.item{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;gap:10px;background:var(--raised);border-radius:12px;padding:8px 10px}
+.item .em{font-size:22px;text-align:center}
+.item .t{min-width:0}
+.item .t b{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .t span{color:var(--muted);font-size:12.5px}
+.item .ctl{display:flex;align-items:center;gap:2px}
+.item input{width:62px;background:var(--surface);border:1.5px solid transparent;border-radius:8px;padding:6px 8px;text-align:right}
+.item .x{border:0;background:none;color:var(--muted);font-size:20px;width:30px;height:30px;cursor:pointer}
+.item .stepper button{width:30px;height:30px;font-size:17px}
+.item .stepper output{min-width:30px}
+.total{display:flex;justify-content:space-between;align-items:baseline;background:var(--raised);border-radius:12px;padding:10px 14px;margin:-4px 0 14px}
+.total b{font-family:var(--display);font-size:22px;font-weight:900;font-variant-numeric:tabular-nums}
+.pick button.bolus:not([aria-pressed="true"]){color:var(--text)}
+input[type="datetime-local"]{background:var(--raised);border:1.5px solid transparent;border-radius:10px;padding:10px 12px;width:100%;color:var(--text);color-scheme:dark}
 .recentfoods{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-top:8px}
 .recentfoods button{flex:none;border:0;background:var(--raised);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap}
 .warnline{background:color-mix(in srgb,var(--high) 14%,var(--surface));border-radius:12px;padding:10px 12px;font-size:13px;margin:4px 0 14px}
@@ -299,17 +314,14 @@ body:not(.on-now) .fab{display:none}
   <form class="sheet" id="foodform" role="dialog" aria-modal="true" aria-labelledby="ff-title" novalidate autocomplete="off">
     <div class="grab"></div>
     <h2 id="ff-title">Log food</h2>
-    <p class="lead">What you ate, how fast it hits, and when.</p>
+    <p class="lead">Add everything in the meal, then say when you ate it.</p>
     <div class="field">
-      <label for="ff-food">Food</label>
+      <label for="ff-food">Items</label>
+      <div class="items" id="ff-items"></div>
       <input id="ff-food" class="search" type="search" placeholder="Search your foods or type a new one" autocapitalize="sentences" autocomplete="off">
       <div class="results" id="ff-results"></div>
-      <div class="picked" id="ff-picked" hidden>
-        <div class="tile" id="ff-p-emoji" style="background:#2d2e33;font-size:24px;width:44px;height:44px"></div>
-        <div class="t"><b id="ff-p-name"></b><span id="ff-p-sub"></span></div>
-        <div class="stepper" aria-label="Servings"><button type="button" id="ff-less" aria-label="Fewer servings">−</button><output id="ff-serv">1</output><button type="button" id="ff-more" aria-label="More servings">+</button></div>
-      </div>
     </div>
+    <div class="total" id="ff-total" hidden><span>Total carbs</span><b id="ff-total-n">0 g</b></div>
     <div class="field">
       <label id="ff-type-l">Type</label>
       <div class="types" id="ff-type" role="group" aria-labelledby="ff-type-l">
@@ -318,19 +330,24 @@ body:not(.on-now) .fab{display:none}
         <button type="button" data-type="slow" aria-pressed="false"><span>🍕</span><b>Slow</b><small>about 4 h</small></button>
       </div>
     </div>
-    <div class="two">
-      <div class="field"><label for="ff-carbs">Carbs (g)</label><input id="ff-carbs" type="number" inputmode="numeric" min="0" max="300" placeholder="Optional"></div>
-      <div class="field"><label id="ff-when-l">When</label>
-        <div class="pick" id="ff-when" role="group" aria-labelledby="ff-when-l"><button type="button" data-min="0" aria-pressed="true">Now</button><button type="button" data-min="15" aria-pressed="false">15m ago</button><button type="button" data-min="30" aria-pressed="false">30m ago</button><button type="button" data-min="60" aria-pressed="false">1h ago</button></div>
+    <div class="field">
+      <label id="ff-when-l">When did you eat it?</label>
+      <div class="pick" id="ff-boluses"></div>
+      <div class="pick" id="ff-when" role="group" aria-labelledby="ff-when-l" style="margin-top:8px">
+        <button type="button" data-when="now" aria-pressed="true">Now</button>
+        <button type="button" data-when="pick" aria-pressed="false">Pick a time</button>
       </div>
+      <input id="ff-time" type="datetime-local" hidden style="margin-top:8px">
+      <span class="hint" id="ff-when-hint"></span>
     </div>
-    <label class="toggle" id="ff-savewrap"><div><b>Save to my foods</b><div class="field hint" style="margin:0">Adds this food to your library for next time.</div></div><input type="checkbox" id="ff-save-lib" checked aria-label="Save to my foods"></label>
-    <div class="toggle"><div><b>Carbs already in Omnipod 5</b><div class="field hint" style="margin:0">On: Steady attaches this food to the pod's carb entry, so carbs aren't counted twice.</div></div><input type="checkbox" id="ff-inpod" checked aria-label="Carbs already entered in Omnipod 5"></div>
+    <label class="toggle" id="ff-savewrap" hidden><div><b>Save new items to my foods</b><div class="field hint" style="margin:0">So you can pick them next time.</div></div><input type="checkbox" id="ff-save-lib" checked aria-label="Save new items to my foods"></label>
+    <div class="toggle"><div><b>Carbs already in Omnipod 5</b><div class="field hint" style="margin:0">On: Steady attaches this meal to the pod's carb entry, so carbs aren't counted twice.</div></div><input type="checkbox" id="ff-inpod" checked aria-label="Carbs already entered in Omnipod 5"></div>
     <div class="warnline">This only adds a note to Nightscout. It doesn't send anything to your pod or give insulin.</div>
     <div class="msg" id="ff-msg" role="status"></div>
-    <div style="display:flex;gap:10px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn accent" type="submit" id="ff-save">Save</button>
       <button class="btn ghost" type="button" id="ff-cancel">Cancel</button>
+      <button class="btn ghost" type="button" id="ff-delete" style="margin-left:auto;color:var(--low)" hidden>Delete entry</button>
     </div>
   </form>
 </div>
@@ -492,6 +509,19 @@ function bolusIOB(){
   return any ? sum : (state.events||[]).some(e=>e.kind==="dose"&&e.insulin>0) ? 0 : null;
 }
 
+// Nightscout AR2 forecast: same coefficients and cone as lib/plugins/ar2.js
+function ar2Forecast(){
+  const e = state.entries; if(e.length<2 || state.source!=="live" && state.source!=="error") return [];
+  const cur = e[0]; if(Date.now()-cur.date > 15*MIN || cur.sgv < 36) return [];
+  const prev = e.find(p=>p.date <= cur.date-4*MIN && p.date >= cur.date-7*MIN); if(!prev) return [];
+  const BG_REF = 140, AR = [-0.723, 1.716], CONE = [0.020,0.041,0.061,0.081,0.099,0.116,0.132,0.146,0.159,0.171,0.182,0.192,0.201], K = 2;
+  const clamp = v => Math.max(36, Math.min(400, Math.round(v)));
+  let a = Math.log(prev.sgv/BG_REF), b = Math.log(cur.sgv/BG_REF), t = cur.date; const out = [];
+  CONE.forEach(step=>{ const n = AR[0]*a + AR[1]*b; a = b; b = n; t += 5*MIN;
+    out.push({t, mid:clamp(BG_REF*Math.exp(b)), hi:clamp(BG_REF*Math.exp(b+K*step)), lo:clamp(BG_REF*Math.exp(b-K*step))}); });
+  return out;
+}
+
 // ---------- rendering ----------
 function render(){
   $("greet").textContent = greeting();
@@ -554,8 +584,10 @@ function renderChart(){
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   const now = Date.now(), t0 = now - state.hours*HR;
   const pts = state.entries.filter(e=>e.date>=t0).slice().reverse();
-  const yMax = Math.max(300, ...pts.map(p=>p.sgv)), yMin = 40;
-  const x = t => padL + (t-t0)/(now-t0)*(W-padL-padR);
+  const fc = ar2Forecast();
+  const tEnd = now + (fc.length ? (state.hours<=6 ? 60 : state.hours<=12 ? 75 : 120)*MIN : 0);
+  const yMax = Math.max(300, ...pts.map(p=>p.sgv), ...fc.map(f=>Math.min(400,f.hi))), yMin = 40;
+  const x = t => padL + (t-t0)/(tEnd-t0)*(W-padL-padR);
   const y = v => padT + (1-(Math.min(v,yMax)-yMin)/(yMax-yMin))*(H-padT-padB);
   let s = "";
   // target band
@@ -566,13 +598,23 @@ function renderChart(){
   // x labels
   const step = state.hours<=3?HR:state.hours<=6?2*HR:state.hours<=12?3*HR:6*HR;
   let tick = Math.ceil(t0/step)*step;
-  for(; tick<now; tick+=step){ const d=new Date(tick); const lbl = d.toLocaleTimeString([], {hour:"numeric"}); s += `<line x1="${x(tick)}" x2="${x(tick)}" y1="${padT}" y2="${H-padB}" stroke="#2e3035" stroke-width="1"/><text x="${x(tick)}" y="${H-6}" text-anchor="middle" fill="#6c7079" font-size="10.5" font-family="Figtree, system-ui, sans-serif">${lbl}</text>`; }
+  for(; tick<tEnd; tick+=step){ const d=new Date(tick); const lbl = d.toLocaleTimeString([], {hour:"numeric"}); s += `<line x1="${x(tick)}" x2="${x(tick)}" y1="${padT}" y2="${H-padB}" stroke="#2e3035" stroke-width="1"/><text x="${x(tick)}" y="${H-6}" text-anchor="middle" fill="#6c7079" font-size="10.5" font-family="Figtree, system-ui, sans-serif">${lbl}</text>`; }
   // treatments markers
   // duration bands (e.g. "Automated delivery paused")
   const F = 'font-family="Figtree, system-ui, sans-serif"';
   (state.bands||[]).forEach(b=>{ if(b.end<t0) return; const bx = x(Math.max(b.t,t0)), bw = Math.max(3, x(Math.min(b.end,now))-bx);
     s += `<rect x="${bx}" y="${H-padB-9}" width="${bw}" height="9" rx="2" fill="#ff4d61" opacity=".35"><title>${esc(b.label)}</title></rect>`;
     if(state.hours<=6 && bw>40) s += `<text x="${bx+4}" y="${H-padB-15}" fill="#d6d8dc" font-size="10" ${F}>${esc(b.label)}</text>`; });
+  // forecast cone (Nightscout AR2): faint band + dotted center line
+  if(fc.length){
+    s += `<line x1="${x(now)}" x2="${x(now)}" y1="${padT-6}" y2="${H-padB}" stroke="#a2a5ad" stroke-opacity=".5" stroke-dasharray="2 3"/>`;
+    const last = pts[pts.length-1];
+    const top = [ [last.date,last.sgv], ...fc.map(f=>[f.t,f.hi]) ], bot = [ [last.date,last.sgv], ...fc.map(f=>[f.t,f.lo]) ].reverse();
+    s += `<path d="M${top.map(p=>x(p[0]).toFixed(1)+" "+y(p[1]).toFixed(1)).join("L")}L${bot.map(p=>x(p[0]).toFixed(1)+" "+y(p[1]).toFixed(1)).join("L")}Z" fill="#5fd4e6" opacity=".14"/>`;
+    s += `<path d="M${x(last.date).toFixed(1)} ${y(last.sgv).toFixed(1)}L${fc.map(f=>x(f.t).toFixed(1)+" "+y(f.mid).toFixed(1)).join("L")}" fill="none" stroke="#5fd4e6" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round"/>`;
+    const end = fc[fc.length-1];
+    if(state.hours<=12) s += `<text x="${Math.min(x(end.t), W-padR)}" y="${y(end.mid)-8}" text-anchor="end" fill="#5fd4e6" font-size="11" font-weight="700" ${F}>${fmt(end.mid)} in 1 h</text>`;
+  }
   // area + line
   if(pts.length){
     const line = pts.map((p,i)=>(i?"L":"M")+x(p.date).toFixed(1)+" "+y(p.sgv).toFixed(1)).join("");
@@ -666,8 +708,11 @@ function renderRecent(){
       else if(+tr.duration>0){ tile="#ff8a8a"; lbl="PAUSE"; }
       else { tile="#5fd4c4"; lbl="NOTE"; }
     }
-    return `<div class="row"><div class="tile" style="background:${tile};${lblStyle}">${esc(lbl)}</div><div class="t"><b>${esc(title)}</b><span>${esc(sub)}</span></div><div class="r">${timeStr(e.t)}</div></div>`;
+    const edit = e.food && e.food.enteredBy==="Steady" && e.food._id;
+    const tag = edit ? `button type="button" data-tid="${esc(e.food._id)}"` : "div";
+    return `<${tag} class="row"><div class="tile" style="background:${tile};${lblStyle}">${esc(lbl)}</div><div class="t"><b>${esc(title)}</b><span>${esc(sub)}${edit?" · tap to edit":""}</span></div><div class="r">${timeStr(e.t)}</div></${edit?"button":"div"}>`;
   }).join("");
+  $("recent").querySelectorAll("button[data-tid]").forEach(b=>b.onclick=()=>{ const tr = state.treatments.find(x=>x._id===b.dataset.tid); if(tr) openFood(tr); });
 }
 function renderHistory(){
   const now = Date.now(); const wk = state.entries.filter(e=>e.date>=now-7*DAY);
@@ -760,7 +805,7 @@ async function nsWrite(method, path, body){
   if(!res.ok) throw new Error("Nightscout returned HTTP "+res.status+".");
   try{ return await res.json(); }catch(e){ return null; }
 }
-const PERM_MSG = "Your Steady token can't change this yet. In Nightscout Admin Tools: add a Role named steady-write with permissions api:treatments:create, api:food:create, api:food:update, api:food:delete. Then set the steady subject's roles to: readable, steady-write";
+const PERM_MSG = "Your Steady token can't change this yet. In Nightscout Admin Tools: add a Role named steady-write with permissions api:treatments:create, api:treatments:update, api:treatments:delete, api:food:create, api:food:update, api:food:delete. Then set the steady subject's roles to: readable, steady-write";
 function matchFoods(q){
   q = q.trim().toLowerCase(); if(!q) return [];
   const words = q.split(/\s+/);
@@ -835,67 +880,133 @@ $("ed-delete").onclick = async ()=>{
   catch(err){ const m=$("ed-msg"); m.className="msg show bad"; m.textContent = err.perm ? PERM_MSG : err.message; }
 };
 
-// ----- Log food sheet -----
-let ff = {type:"medium", min:0, picked:null, servings:1};
+// ----- Log food sheet (multi-item meal, bolus matching, edit/delete) -----
+let ff;
 function setPressed(groupId, attr, val){ document.querySelectorAll("#"+groupId+" button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset[attr]===String(val)))); }
-function updatePicked(){
-  const f = ff.picked; $("ff-picked").hidden = !f; $("ff-savewrap").hidden = !!f;
-  if(!f) return;
-  $("ff-p-emoji").textContent = FOOD_TYPES[f.type].emoji; $("ff-p-name").textContent = f.name;
-  $("ff-p-sub").textContent = f.carbs+" g per "+(f.serving||"serving"); $("ff-serv").textContent = ff.servings;
-  $("ff-carbs").value = Math.round(f.carbs*ff.servings);
+const pad2 = n => String(n).padStart(2,"0");
+const toLocalInput = ms => { const d = new Date(ms); return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate())+"T"+pad2(d.getHours())+":"+pad2(d.getMinutes()); };
+function itemCarbs(it){ return it.carbsPer!=null ? Math.round(it.carbsPer*it.servings*10)/10 : (+it.carbs||0); }
+function totalCarbs(){ return Math.round(ff.items.reduce((a,it)=>a+itemCarbs(it),0)); }
+function renderItems(){
+  $("ff-items").innerHTML = ff.items.map((it,i)=>`<div class="item"><div class="em">${FOOD_TYPES[it.type]?.emoji||"🍽"}</div>
+    <div class="t"><b>${esc(it.name)}</b><span>${it.carbsPer!=null ? itemCarbs(it)+" g · "+it.carbsPer+" g per "+esc(it.serving||"serving") : "New item · enter carbs"}</span></div>
+    <div class="ctl">${it.carbsPer!=null
+      ? `<div class="stepper"><button type="button" data-less="${i}" aria-label="Fewer servings of ${esc(it.name)}">−</button><output>${it.servings}</output><button type="button" data-more="${i}" aria-label="More servings of ${esc(it.name)}">+</button></div>`
+      : `<input type="number" inputmode="decimal" min="0" max="300" data-carbs="${i}" value="${it.carbs===""||it.carbs==null?"":it.carbs}" placeholder="g" aria-label="Carbs for ${esc(it.name)}">`}
+      <button type="button" class="x" data-rm="${i}" aria-label="Remove ${esc(it.name)}">×</button></div></div>`).join("");
+  $("ff-items").querySelectorAll("[data-less]").forEach(b=>b.onclick=()=>{ const it=ff.items[+b.dataset.less]; it.servings=Math.max(0.5,it.servings-0.5); renderItems(); });
+  $("ff-items").querySelectorAll("[data-more]").forEach(b=>b.onclick=()=>{ const it=ff.items[+b.dataset.more]; it.servings=Math.min(10,it.servings+0.5); renderItems(); });
+  $("ff-items").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{ ff.items.splice(+b.dataset.rm,1); renderItems(); });
+  $("ff-items").querySelectorAll("[data-carbs]").forEach(inp=>inp.oninput=()=>{ ff.items[+inp.dataset.carbs].carbs = inp.value; updateTotal(); });
+  updateTotal();
+  $("ff-savewrap").hidden = !ff.items.some(it=>it.carbsPer==null && !it.fromEntry);
 }
-function pickFood(f){ ff.picked = f; ff.servings = 1; ff.type = f.type; setPressed("ff-type","type",f.type); $("ff-food").value = f.name; $("ff-results").innerHTML = ""; updatePicked(); }
+function updateTotal(){ $("ff-total").hidden = !ff.items.length; $("ff-total-n").textContent = totalCarbs()+" g"; }
+function suggestType(){ // type of the item carrying the most carbs
+  let best=null; ff.items.forEach(it=>{ if(!best || itemCarbs(it)>itemCarbs(best)) best=it; });
+  if(best && !ff.typeTouched){ ff.type = best.type; setPressed("ff-type","type",ff.type); }
+}
+function addItem(it){ ff.items.push(it); $("ff-food").value=""; $("ff-results").innerHTML=""; suggestType(); renderItems(); }
 function renderResults(){
-  const q = $("ff-food").value;
-  if(ff.picked && q!==ff.picked.name){ ff.picked = null; updatePicked(); }
-  if(ff.picked){ $("ff-results").innerHTML=""; return; }
-  const list = q.trim() ? matchFoods(q) : state.foods.slice(0,0);
-  $("ff-results").innerHTML = list.map(f=>foodRow(f,"button")).join("");
-  $("ff-results").querySelectorAll("button.row").forEach(b=>b.onclick=()=>pickFood(state.foods.find(f=>f.id===b.dataset.id)));
+  const q = $("ff-food").value.trim();
+  if(!q){ $("ff-results").innerHTML=""; return; }
+  const list = matchFoods(q);
+  const exact = state.foods.some(f=>f.name.toLowerCase()===q.toLowerCase());
+  $("ff-results").innerHTML = list.map(f=>foodRow(f,"button")).join("") + (exact ? "" :
+    `<button class="row" type="button" data-new="1"><div class="tile" style="background:#2d2e33;font-size:22px">＋</div><div class="t"><b>Add “${esc(q)}”</b><span>New item, you'll enter its carbs</span></div></button>`);
+  $("ff-results").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>{ const f = state.foods.find(x=>x.id===b.dataset.id); addItem({name:f.name, foodId:f.id, type:f.type, carbsPer:f.carbs, serving:f.serving, servings:1}); });
+  const nb = $("ff-results").querySelector("button[data-new]"); if(nb) nb.onclick=()=>{ addItem({name:q, type:ff.type, carbs:"", servings:1}); const inp = $("ff-items").querySelector("input[data-carbs='"+(ff.items.length-1)+"']"); if(inp) inp.focus(); };
 }
 $("ff-food").oninput = renderResults;
-$("ff-less").onclick = ()=>{ ff.servings = Math.max(0.5, ff.servings-0.5); updatePicked(); };
-$("ff-more").onclick = ()=>{ ff.servings = Math.min(10, ff.servings+0.5); updatePicked(); };
-function openFood(){
-  ff = {type:"medium", min:0, picked:null, servings:1}; $("foodform").reset(); $("ff-inpod").checked = true; $("ff-save-lib").checked = true;
-  setPressed("ff-type","type","medium"); setPressed("ff-when","min","0"); $("ff-results").innerHTML=""; updatePicked();
+$("ff-food").addEventListener("keydown", ev=>{ if(ev.key==="Enter"){ ev.preventDefault(); const first = $("ff-results").querySelector("button"); if(first) first.click(); } });
+
+function podBoluses(){ // recent pod carb entries from Glooko, newest first, within 12 h
+  const now = Date.now();
+  return (state.events||[]).filter(e=>e.kind==="dose" && e.carbs>0 && e.by!=="Steady" && now-e.t < 12*HR && (!e.food || (ff.editing && e.food._id===ff.editing._id))).slice(0,4);
+}
+function renderWhen(){
+  const bl = podBoluses();
+  $("ff-boluses").innerHTML = bl.length ? bl.map((e,i)=>`<button type="button" class="bolus" data-b="${i}" aria-pressed="${ff.when==="bolus"&&ff.bolusT===e.t}">With pod bolus at ${timeStr(e.t)} · ${e.carbs} g · ${e.insulin} U</button>`).join("") : "";
+  $("ff-boluses").querySelectorAll("button").forEach(b=>b.onclick=()=>{ const e = bl[+b.dataset.b]; ff.when="bolus"; ff.bolusT=e.t; ff.bolusCarbs=e.carbs; $("ff-inpod").checked = true; renderWhen(); });
+  setPressed("ff-when","when", ff.when==="bolus" ? "" : ff.when);
+  $("ff-time").hidden = ff.when!=="pick";
+  const h = $("ff-when-hint");
+  if(ff.when==="bolus"){ const diff = totalCarbs() - ff.bolusCarbs; h.textContent = "Logged at "+timeStr(ff.bolusT)+", attached to that bolus." + (ff.items.length && Math.abs(diff)>=5 ? " Your items add up to "+totalCarbs()+" g; the pod has "+ff.bolusCarbs+" g." : ""); }
+  else h.textContent = "";
+}
+document.querySelectorAll("#ff-when button").forEach(b=>b.onclick=()=>{ ff.when=b.dataset.when; if(ff.when==="pick" && !$("ff-time").value) $("ff-time").value = toLocalInput(Date.now()); renderWhen(); });
+document.querySelectorAll("#ff-type button").forEach(b=>b.onclick=()=>{ ff.type=b.dataset.type; ff.typeTouched=true; setPressed("ff-type","type",ff.type); });
+
+function openFood(existing){
+  ff = {type:"medium", typeTouched:false, items:[], when:"now", bolusT:null, bolusCarbs:0, editing: existing||null};
+  $("foodform").reset(); $("ff-inpod").checked = true; $("ff-save-lib").checked = true; $("ff-time").value = "";
+  $("ff-title").textContent = existing ? "Edit food entry" : "Log food"; $("ff-delete").hidden = !existing; $("ff-save").textContent = existing ? "Save changes" : "Save";
+  if(existing){
+    const typeKey = Object.keys(FOOD_TYPES).find(k=>FOOD_TYPES[k].emoji===existing.foodType) || "medium";
+    ff.type = typeKey; ff.typeTouched = true;
+    const items = Array.isArray(existing.foodItems) && existing.foodItems.length ? existing.foodItems
+      : [{name: existing.food, carbs: existing.foodCarbs ?? existing.carbs ?? "", servings: existing.servings||1}];
+    ff.items = items.map(it=>{ const lib = it.foodId && state.foods.find(f=>f.id===it.foodId);
+      return lib ? {name:lib.name, foodId:lib.id, type:lib.type, carbsPer:lib.carbs, serving:lib.serving, servings:+it.servings||1}
+                 : {name:it.name, type:typeKey, carbs: it.carbs, servings:1, fromEntry:true}; });
+    $("ff-inpod").checked = !!existing.inPod;
+    ff.when = "pick"; $("ff-time").value = toLocalInput(tTime(existing));
+  }
+  setPressed("ff-type","type",ff.type); $("ff-results").innerHTML=""; renderItems(); renderWhen();
   const m = $("ff-msg"); m.className = "msg"; m.textContent = "";
   $("scrim").classList.add("open"); $("scrim").setAttribute("aria-hidden","false");
-  loadFoods().then(renderResults);
-  setTimeout(()=>$("ff-food").focus(), 50);
+  loadFoods().then(()=>{ renderResults(); });
+  if(!existing) setTimeout(()=>$("ff-food").focus(), 50);
 }
 function closeFood(){ $("scrim").classList.remove("open"); $("scrim").setAttribute("aria-hidden","true"); }
-$("fab").onclick = ()=>{ if(!S.url){ showView("set"); return; } openFood(); };
+$("fab").onclick = ()=>{ if(!S.url){ showView("set"); return; } openFood(null); };
 $("ff-cancel").onclick = closeFood;
 $("scrim").addEventListener("click", ev=>{ if(ev.target.id==="scrim") closeFood(); });
 document.addEventListener("keydown", ev=>{ if(ev.key==="Escape"){ closeFood(); closeEditor(); } });
-document.querySelectorAll("#ff-type button").forEach(b=>b.onclick=()=>{ ff.type=b.dataset.type; setPressed("ff-type","type",ff.type); });
-document.querySelectorAll("#ff-when button").forEach(b=>b.onclick=()=>{ ff.min=+b.dataset.min; setPressed("ff-when","min",ff.min); });
+
 $("foodform").onsubmit = async ev => {
   ev.preventDefault();
-  const food = $("ff-food").value.trim(), carbs = Math.round(+$("ff-carbs").value||0), inPod = $("ff-inpod").checked, T = FOOD_TYPES[ff.type];
   const msg = (ok,t)=>{ const m=$("ff-msg"); m.className="msg show "+(ok?"ok":"bad"); m.textContent=t; };
-  if(!food){ msg(false,"Search for a food or type what you ate."); return; }
-  if(carbs<0 || carbs>300){ msg(false,"Carbs should be between 0 and 300 g."); return; }
-  const tr = {created_at:new Date(Date.now()-ff.min*MIN).toISOString(), enteredBy:"Steady", food, foodType:T.emoji, absorptionTime:T.min, inPod,
-    notes: T.emoji+" "+food+(ff.picked && ff.servings!==1 ? " ×"+ff.servings : "")+(carbs?" · "+carbs+" g":"")};
-  if(ff.picked){ tr.foodId = ff.picked.id; tr.servings = ff.servings; }
-  if(inPod || !carbs){ tr.eventType = "Note"; if(carbs) tr.foodCarbs = carbs; }
+  const typed = $("ff-food").value.trim();
+  if(typed && !ff.items.length) addItem({name:typed, type:ff.type, carbs:"", servings:1});
+  if(!ff.items.length){ msg(false,"Add at least one item."); return; }
+  const missing = ff.items.find(it=>it.carbsPer==null && (it.carbs==="" || it.carbs==null));
+  if(missing){ msg(false,"Enter carbs for “"+missing.name+"” (use 0 for zero-carb items like Diet Coke)."); return; }
+  const carbs = totalCarbs(), inPod = $("ff-inpod").checked, T = FOOD_TYPES[ff.type];
+  if(carbs<0 || carbs>400){ msg(false,"Total carbs should be between 0 and 400 g."); return; }
+  let when;
+  if(ff.when==="bolus") when = ff.bolusT;
+  else if(ff.when==="pick"){ when = new Date($("ff-time").value).getTime(); if(!when){ msg(false,"Pick the time you ate."); return; } if(when > Date.now()+5*MIN){ msg(false,"That time is in the future."); return; } }
+  else when = Date.now();
+  const label = it => it.name + (it.carbsPer!=null && it.servings!==1 ? " ×"+it.servings : "");
+  const foodItems = ff.items.map(it=>({name:it.name, servings:it.servings, carbs:itemCarbs(it), foodId:it.foodId||undefined}));
+  const tr = Object.assign({}, ff.editing||{}, {created_at:new Date(when).toISOString(), enteredBy:"Steady", food: ff.items.map(label).join(", "), foodItems,
+    foodType:T.emoji, absorptionTime:T.min, inPod, notes: T.emoji+" "+ff.items.map(label).join(", ")+" · "+carbs+" g"});
+  delete tr.carbs; delete tr.foodCarbs; delete tr.foodId; delete tr.servings;
+  if(inPod || !carbs){ tr.eventType = "Note"; tr.foodCarbs = carbs; }
   else { tr.eventType = "Carb Correction"; tr.carbs = carbs; }
   $("ff-save").disabled = true;
   try{
-    await nsWrite("POST","/api/v1/treatments", [tr]);
+    if(ff.editing) await nsWrite("PUT","/api/v1/treatments/", tr);
+    else await nsWrite("POST","/api/v1/treatments", [tr]);
     let libNote = "";
-    if(!ff.picked && $("ff-save-lib").checked && !state.foods.some(f=>f.name.toLowerCase()===food.toLowerCase())){
-      try{ await nsWrite("POST","/api/v1/food/", foodDoc(food, ff.type, carbs, "1 serving", "")); }
-      catch(e){ libNote = e.perm ? PERM_MSG : "Logged, but couldn't save it to your foods: "+e.message; }
+    if($("ff-save-lib").checked){
+      for(const it of ff.items.filter(it=>it.carbsPer==null && !it.fromEntry && !state.foods.some(f=>f.name.toLowerCase()===it.name.toLowerCase()))){
+        try{ await nsWrite("POST","/api/v1/food/", foodDoc(it.name, ff.type, +it.carbs||0, "1 serving", "")); }
+        catch(e){ libNote = e.perm ? PERM_MSG : "Logged, but couldn't save “"+it.name+"” to your foods: "+e.message; }
+      }
     }
-    if(libNote){ msg(false, "Logged. "+libNote); }
-    else closeFood();
-    refresh(); loadFoods();
+    if(libNote) msg(false, "Logged. "+libNote); else closeFood();
+    await refresh(); loadFoods();
   }catch(err){ msg(false, err.perm ? PERM_MSG : err.message); }
   finally{ $("ff-save").disabled = false; }
+};
+$("ff-delete").onclick = async ()=>{
+  if(!ff.editing) return; const btn = $("ff-delete");
+  if(btn.dataset.confirm!=="1"){ btn.dataset.confirm="1"; btn.textContent="Tap again to delete"; setTimeout(()=>{ btn.dataset.confirm=""; btn.textContent="Delete entry"; }, 3000); return; }
+  btn.dataset.confirm=""; btn.textContent="Delete entry";
+  try{ await nsWrite("DELETE","/api/v1/treatments/"+encodeURIComponent(ff.editing._id)); state.treatments = state.treatments.filter(x=>x._id!==ff.editing._id); closeFood(); render(); refresh(); }
+  catch(err){ const m=$("ff-msg"); m.className="msg show bad"; m.textContent = err.perm ? PERM_MSG : err.message; }
 };
 
 // ---------- nav ----------
