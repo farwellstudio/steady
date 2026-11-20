@@ -41,7 +41,7 @@ html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
-.app{max-width:540px;margin:0 auto;min-height:100%;position:relative;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+.app{max-width:540px;margin:0 auto;min-height:100%;position:relative;padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 .view{display:none}
 .view.on{display:block}
 
@@ -51,7 +51,7 @@ button,input,select{font:inherit;color:inherit}
 .greet{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:-.01em}
 .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;background:rgba(0,0,0,.32);font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
-.pill.demo .dot{background:#b48cff;box-shadow:0 0 0 3px rgba(180,140,255,.3)}
+.pill.setup .dot{background:var(--muted);box-shadow:none}
 .pill.err .dot{background:var(--low)}
 .now{display:flex;align-items:flex-end;gap:14px;margin-top:26px}
 .bg{font-family:var(--display);font-weight:900;font-size:104px;line-height:.86;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
@@ -74,7 +74,7 @@ button,input,select{font:inherit;color:inherit}
 .seg button{border:0;background:var(--raised);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--text);color:#0e0f11}
 .chartwrap{position:relative;margin-top:10px;touch-action:pan-y}
-svg.chart{display:block;width:100%;height:220px}
+svg.chart{display:block;width:100%;height:250px}
 .tip{position:absolute;top:0;transform:translateX(-50%);background:var(--text);color:#0e0f11;font-weight:800;font-size:13px;padding:4px 8px;border-radius:8px;pointer-events:none;white-space:nowrap;display:none;font-variant-numeric:tabular-nums}
 .tip small{font-weight:600;opacity:.7;margin-left:4px}
 
@@ -139,12 +139,45 @@ svg.chart{display:block;width:100%;height:220px}
 .msg.show{display:block}
 .msg.ok{background:color-mix(in srgb,var(--inrange) 16%,var(--surface))}
 .msg.bad{background:color-mix(in srgb,var(--low) 16%,var(--surface))}
+.fab{position:fixed;z-index:6;right:max(16px,calc(50% - 254px));bottom:calc(92px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:13px 18px 13px 15px;background:var(--text);color:#0e0f11;font-weight:800;font-size:15px;box-shadow:0 8px 24px rgba(0,0,0,.45);cursor:pointer}
+.fab svg{width:20px;height:20px}
+body:not(.on-now) .fab{display:none}
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
+.scrim.open{display:flex}
+.sheet{width:100%;max-width:540px;max-height:92%;overflow:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:10px 18px calc(20px + env(safe-area-inset-bottom))}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 12px}
+.sheet h2{font-family:var(--display);font-weight:900;font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
+.sheet .lead{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+.types{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.types button{border:1.5px solid var(--line);background:var(--raised);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--text)}
+.types button span{font-size:28px;line-height:1.1}
+.types button b{font-size:14px}
+.types button small{color:var(--muted);font-size:12px}
+.types button[aria-pressed="true"]{border-color:var(--text);background:#2d2e33}
+.pick{display:flex;gap:6px;flex-wrap:wrap}
+.pick button{border:0;background:var(--raised);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+.pick button[aria-pressed="true"]{background:var(--text);color:#0e0f11}
+.search{flex:1;background:var(--raised);border:1.5px solid transparent;border-radius:999px;padding:11px 16px;width:100%}
+.search:focus{outline:none;border-color:var(--text)}
+.results{display:flex;flex-direction:column;margin-top:6px;max-height:260px;overflow:auto}
+.results button.row{border:0;background:none;text-align:left;width:100%;cursor:pointer;color:var(--text)}
+.results button.row:hover,.list button.row:hover{background:var(--raised)}
+.list button.row{border:0;background:none;text-align:left;width:100%;cursor:pointer;color:var(--text)}
+.picked{display:flex;align-items:center;gap:12px;background:var(--raised);border-radius:14px;padding:10px 12px}
+.picked .t{flex:1;min-width:0}.picked .t b{display:block}.picked .t span{color:var(--muted);font-size:13px}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:36px;height:36px;border-radius:50%;border:0;background:var(--surface);font-size:20px;font-weight:800;cursor:pointer;color:var(--text)}
+.stepper output{min-width:42px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+.grouph{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:16px 4px 4px}
+.recentfoods{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-top:8px}
+.recentfoods button{flex:none;border:0;background:var(--raised);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap}
+.warnline{background:color-mix(in srgb,var(--high) 14%,var(--surface));border-radius:12px;padding:10px 12px;font-size:13px;margin:4px 0 14px}
 .note{color:var(--muted);font-size:12.5px;padding:18px 20px 8px;text-align:left}
 
 /* Tab bar */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;background:linear-gradient(180deg,rgba(14,15,17,.0),rgba(14,15,17,.92) 30%,#0e0f11);padding:14px 0 calc(8px + env(safe-area-inset-bottom))}
-.tabs nav{max-width:540px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
-.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;padding:4px 0}
+.tabs nav{max-width:540px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;padding:4px 0}
 .tabs button svg{width:24px;height:24px}
 .tabs button[aria-current="page"]{color:var(--text)}
 .plainhead{padding:calc(22px + env(safe-area-inset-top)) 20px 4px}
@@ -153,7 +186,7 @@ svg.chart{display:block;width:100%;height:220px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
-<body>
+<body class="on-now">
 <div class="app">
 
   <!-- NOW -->
@@ -161,7 +194,7 @@ svg.chart{display:block;width:100%;height:220px}
     <header class="hero">
       <div class="topbar">
         <div class="greet" id="greet">Good morning</div>
-        <div class="pill" id="srcpill"><span class="dot"></span><span id="srctext">Demo data</span></div>
+        <div class="pill" id="srcpill"><span class="dot"></span><span id="srctext">Not connected</span></div>
       </div>
       <div class="now">
         <div class="bg" id="bg">--</div>
@@ -205,6 +238,19 @@ svg.chart{display:block;width:100%;height:220px}
     </div>
   </section>
 
+  <!-- FOODS -->
+  <section class="view" id="v-foods" aria-label="Foods">
+    <div class="plainhead"><h1>Foods</h1><p>Your library, saved in Nightscout</p></div>
+    <div class="sec" style="margin-top:10px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="lib-search" class="search" type="search" placeholder="Search foods" aria-label="Search foods" autocomplete="off">
+        <button class="btn sm" type="button" id="lib-new">New food</button>
+      </div>
+      <div class="msg" id="lib-msg" role="status" style="margin-top:12px"></div>
+      <div class="list" id="lib-list" style="margin-top:8px"></div>
+    </div>
+  </section>
+
   <!-- CONNECTIONS -->
   <section class="view" id="v-conn" aria-label="Connections">
     <div class="plainhead"><h1>Connections</h1><p>Apps sending to or reading from your Nightscout</p></div>
@@ -215,7 +261,6 @@ svg.chart{display:block;width:100%;height:220px}
   <section class="view" id="v-set" aria-label="Settings">
     <div class="plainhead"><h1>Settings</h1><p>Point Steady at your Nightscout site</p></div>
     <form class="sec" id="setform" novalidate style="margin-top:12px" autocomplete="off">
-      <div class="toggle"><div><b>Demo mode</b><div class="field hint" style="margin:0">Shows sample data. Turns off when you save a Nightscout URL.</div></div><input type="checkbox" id="s-demo" aria-label="Demo mode"></div>
       <div class="field">
         <label for="s-url">Nightscout URL</label>
         <input id="s-url" type="text" autocapitalize="off" autocorrect="off" inputmode="url" placeholder="https://yoursite.example.com" spellcheck="false">
@@ -223,7 +268,7 @@ svg.chart{display:block;width:100%;height:220px}
       <div class="field">
         <label for="s-token">Access token</label>
         <input id="s-token" type="text" autocapitalize="off" autocorrect="off" placeholder="steady-1a2b3c4d5e6f7a8b" spellcheck="false">
-        <span class="hint">Make a token with the <b>readable</b> role in Nightscout Admin Tools. Never paste your API_SECRET here.</span>
+        <span class="hint">From Nightscout Admin Tools. Give it the roles <b>readable, steady-write</b> so Steady can log food and keep your food library. Never paste your API_SECRET here.</span>
       </div>
       <div class="two">
         <div class="field"><label for="s-units">Units</label><select id="s-units"><option value="mgdl">mg/dL</option><option value="mmol">mmol/L</option></select></div>
@@ -232,6 +277,11 @@ svg.chart{display:block;width:100%;height:220px}
       <div class="two">
         <div class="field"><label for="s-low">Target low</label><input id="s-low" type="number" inputmode="numeric" min="50" max="120"></div>
         <div class="field"><label for="s-high">Target high</label><input id="s-high" type="number" inputmode="numeric" min="120" max="300"></div>
+      </div>
+      <div class="field">
+        <label for="s-dia">Insulin action time</label>
+        <select id="s-dia"><option value="2">2 hours</option><option value="3">3 hours</option><option value="4">4 hours</option><option value="5">5 hours</option><option value="6">6 hours</option></select>
+        <span class="hint">Match the Duration of Insulin Action in your Omnipod 5 settings. Used for the insulin-on-board estimate.</span>
       </div>
       <div class="msg" id="s-msg" role="status"></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -243,10 +293,80 @@ svg.chart{display:block;width:100%;height:220px}
   </section>
 </div>
 
+<button class="fab" id="fab" type="button" aria-label="Log food"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Log food</button>
+
+<div class="scrim" id="scrim" aria-hidden="true">
+  <form class="sheet" id="foodform" role="dialog" aria-modal="true" aria-labelledby="ff-title" novalidate autocomplete="off">
+    <div class="grab"></div>
+    <h2 id="ff-title">Log food</h2>
+    <p class="lead">What you ate, how fast it hits, and when.</p>
+    <div class="field">
+      <label for="ff-food">Food</label>
+      <input id="ff-food" class="search" type="search" placeholder="Search your foods or type a new one" autocapitalize="sentences" autocomplete="off">
+      <div class="results" id="ff-results"></div>
+      <div class="picked" id="ff-picked" hidden>
+        <div class="tile" id="ff-p-emoji" style="background:#2d2e33;font-size:24px;width:44px;height:44px"></div>
+        <div class="t"><b id="ff-p-name"></b><span id="ff-p-sub"></span></div>
+        <div class="stepper" aria-label="Servings"><button type="button" id="ff-less" aria-label="Fewer servings">−</button><output id="ff-serv">1</output><button type="button" id="ff-more" aria-label="More servings">+</button></div>
+      </div>
+    </div>
+    <div class="field">
+      <label id="ff-type-l">Type</label>
+      <div class="types" id="ff-type" role="group" aria-labelledby="ff-type-l">
+        <button type="button" data-type="fast" aria-pressed="false"><span>🍭</span><b>Fast</b><small>about 2 h</small></button>
+        <button type="button" data-type="medium" aria-pressed="true"><span>🌮</span><b>Medium</b><small>about 3 h</small></button>
+        <button type="button" data-type="slow" aria-pressed="false"><span>🍕</span><b>Slow</b><small>about 4 h</small></button>
+      </div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="ff-carbs">Carbs (g)</label><input id="ff-carbs" type="number" inputmode="numeric" min="0" max="300" placeholder="Optional"></div>
+      <div class="field"><label id="ff-when-l">When</label>
+        <div class="pick" id="ff-when" role="group" aria-labelledby="ff-when-l"><button type="button" data-min="0" aria-pressed="true">Now</button><button type="button" data-min="15" aria-pressed="false">15m ago</button><button type="button" data-min="30" aria-pressed="false">30m ago</button><button type="button" data-min="60" aria-pressed="false">1h ago</button></div>
+      </div>
+    </div>
+    <label class="toggle" id="ff-savewrap"><div><b>Save to my foods</b><div class="field hint" style="margin:0">Adds this food to your library for next time.</div></div><input type="checkbox" id="ff-save-lib" checked aria-label="Save to my foods"></label>
+    <div class="toggle"><div><b>Carbs already in Omnipod 5</b><div class="field hint" style="margin:0">On: Steady attaches this food to the pod's carb entry, so carbs aren't counted twice.</div></div><input type="checkbox" id="ff-inpod" checked aria-label="Carbs already entered in Omnipod 5"></div>
+    <div class="warnline">This only adds a note to Nightscout. It doesn't send anything to your pod or give insulin.</div>
+    <div class="msg" id="ff-msg" role="status"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn accent" type="submit" id="ff-save">Save</button>
+      <button class="btn ghost" type="button" id="ff-cancel">Cancel</button>
+    </div>
+  </form>
+</div>
+
+<div class="scrim" id="ed-scrim" aria-hidden="true">
+  <form class="sheet" id="edform" role="dialog" aria-modal="true" aria-labelledby="ed-title" novalidate autocomplete="off">
+    <div class="grab"></div>
+    <h2 id="ed-title">New food</h2>
+    <p class="lead">Saved in your Nightscout food library.</p>
+    <div class="field"><label for="ed-name">Name</label><input id="ed-name" type="text" placeholder="Chicken burrito" autocapitalize="sentences"></div>
+    <div class="field"><label id="ed-type-l">Type</label>
+      <div class="types" id="ed-type" role="group" aria-labelledby="ed-type-l">
+        <button type="button" data-type="fast" aria-pressed="false"><span>🍭</span><b>Fast</b><small>about 2 h</small></button>
+        <button type="button" data-type="medium" aria-pressed="true"><span>🌮</span><b>Medium</b><small>about 3 h</small></button>
+        <button type="button" data-type="slow" aria-pressed="false"><span>🍕</span><b>Slow</b><small>about 4 h</small></button>
+      </div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="ed-carbs">Carbs per serving (g)</label><input id="ed-carbs" type="number" inputmode="decimal" min="0" max="300" placeholder="45"></div>
+      <div class="field"><label for="ed-serving">Serving</label><input id="ed-serving" type="text" placeholder="1 burrito"></div>
+    </div>
+    <div class="field"><label for="ed-cat">Category</label><input id="ed-cat" type="text" placeholder="Dinner, Snacks, Restaurants…" list="ed-cats" autocapitalize="words"><datalist id="ed-cats"></datalist></div>
+    <div class="msg" id="ed-msg" role="status"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn accent" type="submit" id="ed-save">Save food</button>
+      <button class="btn ghost" type="button" id="ed-cancel">Cancel</button>
+      <button class="btn ghost" type="button" id="ed-delete" style="margin-left:auto;color:var(--low)" hidden>Delete</button>
+    </div>
+  </form>
+</div>
+
 <div class="tabs">
-  <nav aria-label="Main">
+  <nav aria-label="Main" style="grid-template-columns:repeat(5,1fr)">
     <button data-v="now" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Now</button>
     <button data-v="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>History</button>
+    <button data-v="foods"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2.5z"/><path d="M8 7h7M8 11h5"/></svg>Foods</button>
     <button data-v="conn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>Connections</button>
     <button data-v="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
   </nav>
@@ -260,22 +380,22 @@ const ARROWS = {DoubleUp:"⇈",SingleUp:"↑",FortyFiveUp:"↗",Flat:"→",Forty
 const TREND_WORDS = {DoubleUp:"rising fast",SingleUp:"rising",FortyFiveUp:"rising slowly",Flat:"steady",FortyFiveDown:"falling slowly",SingleDown:"falling",DoubleDown:"falling fast"};
 
 // ---------- settings ----------
-const DEFAULTS = {demo:true,url:"",token:"",units:"mgdl",refresh:60,low:70,high:180};
+const DEFAULTS = {url:"",token:"",units:"mgdl",refresh:60,low:70,high:180,dia:4};
 function loadSettings(){
   let s = Object.assign({},DEFAULTS);
   try{ s = Object.assign(s, JSON.parse(localStorage.getItem("steady.settings")||"{}")); }catch(e){}
   // Fallback for phones that block storage: settings carried in the page address (?ns=...&t=...)
   try{ const q = new URLSearchParams(location.search);
-    if(q.get("ns")){ s.url = q.get("ns"); s.token = q.get("t")||""; s.demo = false; if(q.get("u")) s.units = q.get("u"); }
+    if(q.get("ns")){ s.url = q.get("ns"); s.token = q.get("t")||""; if(q.get("u")) s.units = q.get("u"); }
   }catch(e){}
-  if(s.url) s.demo = false;
+  delete s.demo;
   return s;
 }
 function saveSettings(s){
   try{ localStorage.setItem("steady.settings",JSON.stringify(s)); return localStorage.getItem("steady.settings")===JSON.stringify(s); }catch(e){ return false; }
 }
 let S = loadSettings();
-let state = {entries:[],treatments:[],devicestatus:null,source:"demo",error:null,hours:3,lastFetch:0};
+let state = {entries:[],treatments:[],devicestatus:null,source:"setup",error:null,hours:3,lastFetch:0,foods:[]};
 
 // ---------- helpers ----------
 const $ = id => document.getElementById(id);
@@ -289,41 +409,6 @@ function ago(ms){ const m = Math.round((Date.now()-ms)/MIN); if(m<1) return "jus
 function timeStr(ms){ return new Date(ms).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}); }
 function greeting(){ const h=new Date().getHours(); return h<5?"Good night":h<12?"Good morning":h<17?"Good afternoon":"Good evening"; }
 
-// ---------- demo data ----------
-function demoData(){
-  const now = Date.now(), start = now - 7*DAY;
-  let seed = 7; const rnd = () => (seed = (seed*16807)%2147483647)/2147483647;
-  const meals = [];
-  for(let d=0; d<8; d++){
-    const base = new Date(start + d*DAY); base.setHours(0,0,0,0);
-    [[7.6,45,5.5],[12.5,60,6.5],[18.7,70,7.5]].forEach(([h,c,u])=>{
-      const t = base.getTime() + h*HR + (rnd()-.5)*50*MIN;
-      if(t>start && t<now) meals.push({t,carbs:Math.round(c*(.7+rnd()*.6)),ins:+(u*(.75+rnd()*.5)).toFixed(1)});
-    });
-  }
-  const entries = [];
-  let drift = 0;
-  for(let t = start; t <= now; t += 5*MIN){
-    drift += (rnd()-.5)*4; drift *= .97;
-    const h = new Date(t).getHours() + new Date(t).getMinutes()/60;
-    let g = 118 + 14*Math.sin((h-4)/24*2*Math.PI) + drift;
-    if(h>3 && h<7) g += 12*Math.sin((h-3)/4*Math.PI); // dawn
-    meals.forEach(m=>{ const dt=(t-m.t)/HR; if(dt>0 && dt<4.5){ g += m.carbs*1.6*Math.exp(-Math.pow((dt-1.1)/0.75,2)) - m.ins*7*Math.max(0,Math.sin(Math.min(dt,3)/3*Math.PI))*.35; } });
-    entries.push({date:t, sgv:Math.max(48,Math.min(360,Math.round(g)))});
-  }
-  // trend directions
-  for(let i=entries.length-1;i>=0;i--){ const p = entries[i-3]; entries[i].direction = p ? dirFor((entries[i].sgv-p.sgv)/15) : "Flat"; }
-  entries.reverse();
-  const treatments = [];
-  meals.filter(m=>m.t>now-2*DAY).forEach(m=>{
-    treatments.push({created_at:new Date(m.t).toISOString(),eventType:"Meal Bolus",carbs:m.carbs,insulin:m.ins,enteredBy:"Loop"});
-  });
-  treatments.push({created_at:new Date(now-150*MIN).toISOString(),eventType:"Note",notes:"PT session, 45 min",enteredBy:"Steady"});
-  treatments.push({created_at:new Date(now-26*HR).toISOString(),eventType:"Sensor Change",enteredBy:"Dexcom"});
-  treatments.sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at));
-  const devicestatus = {created_at:new Date(now-3*MIN).toISOString(),device:"loop://iPhone",loop:{iob:{iob:1.84},cob:{cob:12},timestamp:new Date(now-3*MIN).toISOString()},pump:{reservoir:96.5,battery:{percent:72}},uploader:{battery:81}};
-  return {entries,treatments,devicestatus};
-}
 function dirFor(rate){ // mg/dL per min
   if(rate>3) return "DoubleUp"; if(rate>2) return "SingleUp"; if(rate>1) return "FortyFiveUp";
   if(rate<-3) return "DoubleDown"; if(rate<-2) return "SingleDown"; if(rate<-1) return "FortyFiveDown"; return "Flat";
@@ -349,7 +434,7 @@ async function fetchLive(){
   const since = Date.now() - 7*DAY;
   const [entries, treatments, ds] = await Promise.all([
     getJSON("/api/v1/entries/sgv.json", {"count":"2100","find[date][$gte]":String(since)}),
-    getJSON("/api/v1/treatments.json", {"count":"60","find[created_at][$gte]":new Date(Date.now()-2*DAY).toISOString()}),
+    getJSON("/api/v1/treatments.json", {"count":"1000","find[created_at][$gte]":new Date(Date.now()-2*DAY).toISOString()}),
     getJSON("/api/v1/devicestatus.json", {"count":"5"})
   ]);
   return {
@@ -361,8 +446,8 @@ async function fetchLive(){
 }
 
 async function refresh(){
-  if(S.demo || !S.url){
-    Object.assign(state, demoData(), {source:"demo", error:null});
+  if(!S.url){
+    Object.assign(state, {entries:[], treatments:[], devicestatus:null, statuses:[], source:"setup", error:null});
   } else {
     try{ const d = await fetchLive(); const ds = Array.isArray(d.devicestatus)? d.devicestatus : [];
       Object.assign(state, {entries:d.entries, treatments:d.treatments, devicestatus: ds.find(x=>x.loop||x.openaps) || ds[0] || null, statuses: ds, source:"live", error:null});
@@ -372,14 +457,49 @@ async function refresh(){
   render();
 }
 
+// ---------- treatments model ----------
+const FOOD_TYPES = {fast:{emoji:"🍭",label:"Fast",min:120}, medium:{emoji:"🌮",label:"Medium",min:180}, slow:{emoji:"🍕",label:"Slow",min:240}};
+const tTime = tr => Date.parse(tr.created_at || tr.timestamp) || tr.mills || 0;
+const isFood = tr => !!(tr.food || (tr.foodType && tr.enteredBy==="Steady"));
+function buildEvents(){
+  const tr = (state.treatments||[]).filter(x=>x.eventType!=="Temp Basal");
+  const doses = tr.filter(x=>!isFood(x) && ((+x.insulin>0) || (+x.carbs>0))).map(x=>({kind:"dose", t:tTime(x), insulin:+x.insulin||0, carbs:+x.carbs||0, by:x.enteredBy||"", food:null}));
+  const events = [...doses];
+  tr.filter(isFood).forEach(f=>{
+    const ft = tTime(f);
+    let match = null;
+    if(f.inPod){ let bd = 30*MIN+1; doses.forEach(d=>{ const dd = Math.abs(d.t-ft); if(!d.food && d.carbs>0 && dd<bd){ bd=dd; match=d; } }); }
+    if(match){ match.food = f; }
+    else events.push({kind:"dose", t:ft, insulin:0, carbs:+f.carbs||0, foodCarbs:+f.foodCarbs||0, by:"Steady", food:f});
+  });
+  const bands = tr.filter(x=>+x.duration>0 && x.eventType!=="Temp Basal" && !isFood(x)).map(x=>({t:tTime(x), end:tTime(x)+(+x.duration)*MIN, label:x.notes||x.reason||x.eventType||"Event"}));
+  const other = tr.filter(x=>!isFood(x) && !(+x.insulin>0) && !(+x.carbs>0)).map(x=>({kind:"other", t:tTime(x), tr:x}));
+  events.push(...other);
+  events.sort((a,b)=>b.t-a.t);
+  state.events = events; state.bands = bands;
+}
+// Exponential insulin activity curve (same family Loop and oref use), rapid-acting peak ~75 min.
+function iobFraction(minAgo, diaH){
+  const td = diaH*60, tp = Math.min(75, td*0.4);
+  if(minAgo<=0) return 1; if(minAgo>=td) return 0;
+  const tau = tp*(1-tp/td)/(1-2*tp/td), a = 2*tau/td, S1 = 1/(1-a+(1+a)*Math.exp(-td/tau));
+  const t = minAgo;
+  return Math.max(0, 1 - S1*(1-a)*((t*t/(tau*td*(1-a)) - t/tau - 1)*Math.exp(-t/tau) + 1));
+}
+function bolusIOB(){
+  const now = Date.now(), dia = S.dia||4; let sum = 0, any = false;
+  (state.events||[]).forEach(e=>{ if(e.kind==="dose" && e.insulin>0){ const m=(now-e.t)/MIN; if(m>=0 && m<dia*60){ sum += e.insulin*iobFraction(m,dia); any = true; } } });
+  return any ? sum : (state.events||[]).some(e=>e.kind==="dose"&&e.insulin>0) ? 0 : null;
+}
+
 // ---------- rendering ----------
 function render(){
   $("greet").textContent = greeting();
-  const pill = $("srcpill"); pill.className = "pill" + (state.source==="demo"?" demo":state.source==="error"?" err":"");
-  $("srctext").textContent = state.source==="demo" ? "Demo data" : state.source==="error" ? "Connection problem" : "Live";
+  const pill = $("srcpill"); pill.className = "pill" + (state.source==="setup"?" setup":state.source==="error"?" err":"");
+  $("srctext").textContent = state.source==="setup" ? "Not connected" : state.source==="error" ? "Connection problem" : "Live";
   $("unitlbl").textContent = S.units==="mmol"?"mmol/L":"mg/dL";
   $("rangelbl").textContent = "Target " + fmt(S.low) + "–" + fmt(S.high);
-  renderNow(); renderChart(); renderStats(); renderRecent(); renderHistory(); renderConnections();
+  buildEvents(); renderNow(); renderChart(); renderStats(); renderRecent(); renderHistory(); renderConnections();
 }
 
 function renderNow(){
@@ -390,7 +510,13 @@ function renderNow(){
     $("bg").textContent = "--"; $("arrow").textContent = ""; $("status").textContent = state.error;
     $("delta").textContent = "--"; $("ago").textContent = ""; $("chips").innerHTML = ""; return;
   }
-  if(!cur){ $("status").textContent = "No readings yet"; return; }
+  if(state.source==="setup"){
+    root.style.setProperty("--accent","var(--stale)");
+    $("bg").textContent = "--"; $("arrow").textContent = ""; $("delta").textContent = "--"; $("ago").textContent = "";
+    $("status").innerHTML = 'Connect your Nightscout site in <button type="button" class="btn sm" id="gosetup" style="margin-left:4px">Settings</button>';
+    $("gosetup").onclick = ()=>showView("set"); $("chips").innerHTML = ""; return;
+  }
+  if(!cur){ $("status").textContent = "No readings yet"; $("chips").innerHTML = ""; return; }
   const stale = Date.now()-cur.date > 15*MIN;
   const b = band(cur.sgv);
   root.style.setProperty("--accent", stale ? "var(--stale)" : BAND_COLOR[b]);
@@ -414,11 +540,17 @@ function renderNow(){
     const lp = ds.loop?.timestamp || ds.openaps?.enacted?.timestamp || ds.created_at;
     if(lp && (ds.loop||ds.openaps)) chips.push([ds.loop?"Loop":"Trio / OpenAPS", Math.round((Date.now()-Date.parse(lp))/MIN)+" min ago"]);
   }
+  if(!(ds && (ds.loop||ds.openaps))){
+    const iob = bolusIOB();
+    if(iob!=null) chips.unshift(["Bolus IOB (est.)", iob.toFixed(2)+" U"]);
+    const lastDose = (state.events||[]).find(e=>e.kind==="dose" && e.insulin>0);
+    if(lastDose) chips.push(["Last bolus", lastDose.insulin+" U · "+ago(lastDose.t).replace(" ago","")]);
+  }
   $("chips").innerHTML = chips.map(([k,v])=>`<div class="chip"><small>${esc(k)}</small><span>${esc(v)}</span></div>`).join("");
 }
 
 function renderChart(){
-  const svg = $("chart"); const W = svg.clientWidth || 500, H = 220, padL = 30, padR = 8, padT = 22, padB = 22;
+  const svg = $("chart"); const W = svg.clientWidth || 500, H = 250, padL = 30, padR = 8, padT = 40, padB = 30;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   const now = Date.now(), t0 = now - state.hours*HR;
   const pts = state.entries.filter(e=>e.date>=t0).slice().reverse();
@@ -436,7 +568,11 @@ function renderChart(){
   let tick = Math.ceil(t0/step)*step;
   for(; tick<now; tick+=step){ const d=new Date(tick); const lbl = d.toLocaleTimeString([], {hour:"numeric"}); s += `<line x1="${x(tick)}" x2="${x(tick)}" y1="${padT}" y2="${H-padB}" stroke="#2e3035" stroke-width="1"/><text x="${x(tick)}" y="${H-6}" text-anchor="middle" fill="#6c7079" font-size="10.5" font-family="Figtree, system-ui, sans-serif">${lbl}</text>`; }
   // treatments markers
-  state.treatments.forEach(tr=>{ const t = Date.parse(tr.created_at); if(t<t0) return; if(tr.carbs){ s += `<circle cx="${x(t)}" cy="${padT-10}" r="4" fill="#f4b740"/>`; } if(tr.insulin){ s += `<rect x="${x(t)-3.5}" y="${padT-14}" width="7" height="7" rx="1.5" fill="#6fa8ff" transform="translate(${tr.carbs?9:0},0)"/>`; } });
+  // duration bands (e.g. "Automated delivery paused")
+  const F = 'font-family="Figtree, system-ui, sans-serif"';
+  (state.bands||[]).forEach(b=>{ if(b.end<t0) return; const bx = x(Math.max(b.t,t0)), bw = Math.max(3, x(Math.min(b.end,now))-bx);
+    s += `<rect x="${bx}" y="${H-padB-9}" width="${bw}" height="9" rx="2" fill="#ff4d61" opacity=".35"><title>${esc(b.label)}</title></rect>`;
+    if(state.hours<=6 && bw>40) s += `<text x="${bx+4}" y="${H-padB-15}" fill="#d6d8dc" font-size="10" ${F}>${esc(b.label)}</text>`; });
   // area + line
   if(pts.length){
     const line = pts.map((p,i)=>(i?"L":"M")+x(p.date).toFixed(1)+" "+y(p.sgv).toFixed(1)).join("");
@@ -449,6 +585,22 @@ function renderChart(){
   } else {
     s += `<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#a2a5ad" font-size="13" font-family="Figtree, system-ui, sans-serif">No readings in this window</text>`;
   }
+  // insulin + carb markers, Nightscout style: white top = carbs, blue bottom = insulin
+  const nearestY = t => { let best=null, bd=Infinity; pts.forEach(p=>{ const d=Math.abs(p.date-t); if(d<bd){bd=d;best=p;} }); return best && bd<20*MIN ? y(best.sgv) : y(140); };
+  const showLbl = state.hours<=6;
+  (state.events||[]).filter(e=>e.kind==="dose" && e.t>=t0 && e.t<=now+5*MIN).forEach(e=>{
+    const cx = x(e.t), cy = nearestY(e.t), r = Math.max(6, Math.min(11, 5 + Math.sqrt(e.insulin*4 + (e.carbs||e.foodCarbs||0)/4)));
+    const carbs = e.carbs || 0, food = e.food;
+    if(carbs || food){ s += `<path d="M${cx-r} ${cy}A${r} ${r} 0 0 1 ${cx+r} ${cy}Z" fill="${carbs?"#f4f5f6":"#6c7079"}"/>`; }
+    if(e.insulin){ s += `<path d="M${cx-r} ${cy}A${r} ${r} 0 0 0 ${cx+r} ${cy}Z" fill="#4f8ff7"/>`; }
+    else { s += `<path d="M${cx-r} ${cy}A${r} ${r} 0 0 0 ${cx+r} ${cy}Z" fill="#3a3c42"/>`; }
+    s += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#0e0f11" stroke-width="1.5"/>`;
+    if(showLbl){
+      const top = [food?food.foodType||"":"", carbs? carbs+" g" : (food&&food.foodCarbs? food.foodCarbs+" g":"")].filter(Boolean).join(" ");
+      if(top) s += `<text x="${cx}" y="${cy-r-5}" text-anchor="middle" fill="#f4f5f6" font-size="12" font-weight="700" ${F}>${esc(top)}</text>`;
+      if(e.insulin) s += `<text x="${cx}" y="${cy+r+14}" text-anchor="middle" fill="#9cc0ff" font-size="12" font-weight="700" ${F}>${e.insulin} U</text>`;
+    } else if(food){ s += `<text x="${cx}" y="${cy-r-4}" text-anchor="middle" font-size="12" ${F}>${esc(food.foodType||"")}</text>`; }
+  });
   s += `<line id="cursor" x1="0" x2="0" y1="${padT}" y2="${H-padB}" stroke="#f4f5f6" stroke-opacity=".5" visibility="hidden"/>`;
   svg.innerHTML = s;
   // scrub
@@ -489,17 +641,32 @@ function renderStats(){
   statCards(summarize(state.entries.filter(e=>e.date>=t0)), "stats");
 }
 function renderRecent(){
-  const items = state.treatments.slice(0,8);
+  const items = (state.events||[]).slice(0,10);
   if(!items.length){ $("recent").innerHTML = `<div class="empty">Nothing logged in the last two days.</div>`; return; }
-  $("recent").innerHTML = items.map(tr=>{
-    const t = Date.parse(tr.created_at);
-    let title = tr.eventType || "Entry", sub = tr.enteredBy ? "from "+tr.enteredBy : "", tile = "#a2a5ad", lbl = "•";
-    if(tr.carbs && tr.insulin){ title = tr.carbs+" g carbs · "+tr.insulin+" U"; tile="#f4b740"; lbl="MEAL"; }
-    else if(tr.carbs){ title = tr.carbs+" g carbs"; tile="#f4b740"; lbl="CARB"; }
-    else if(tr.insulin){ title = tr.insulin+" U insulin"; tile="#6fa8ff"; lbl="BOL"; }
-    else if(/sensor/i.test(title)){ tile="#b48cff"; lbl="CGM"; }
-    else if(tr.notes){ title = tr.notes; sub = (tr.eventType||"Note")+(tr.enteredBy?" · "+tr.enteredBy:""); tile="#5fd4c4"; lbl="NOTE"; }
-    return `<div class="row"><div class="tile" style="background:${tile}">${lbl}</div><div class="t"><b>${esc(title)}</b><span>${esc(sub)}</span></div><div class="r">${timeStr(t)}</div></div>`;
+  $("recent").innerHTML = items.map(e=>{
+    let title, sub = "", tile = "#a2a5ad", lbl = "•", lblStyle = "";
+    if(e.kind==="dose"){
+      const parts = [];
+      const carbs = e.carbs || (e.food && +e.food.foodCarbs) || 0;
+      if(carbs) parts.push(carbs+" g carbs"); if(e.insulin) parts.push(e.insulin+" U");
+      if(e.food){
+        title = e.food.food || "Food"; tile = "#2d2e33"; lbl = e.food.foodType || "🍽"; lblStyle = "font-size:24px";
+        const ft = Object.values(FOOD_TYPES).find(x=>x.emoji===e.food.foodType);
+        sub = [parts.join(" · "), ft ? ft.label.toLowerCase()+" carbs" : ""].filter(Boolean).join(" · ") || "Food note";
+        if(e.by && e.by!=="Steady") sub += " · "+e.by;
+      } else {
+        title = parts.join(" · "); sub = e.by ? "from "+e.by : "";
+        if(carbs && e.insulin){ tile="#f4b740"; lbl="MEAL"; } else if(carbs){ tile="#f4b740"; lbl="CARB"; } else { tile="#4f8ff7"; lbl="BOL"; }
+      }
+    } else {
+      const tr = e.tr; title = tr.notes || tr.eventType || "Entry"; sub = (tr.notes? (tr.eventType||"Note") : "") + (tr.enteredBy? (tr.notes?" · ":"from ")+tr.enteredBy : "");
+      if(+tr.duration>0) sub = Math.round(tr.duration)+" min" + (tr.enteredBy?" · "+tr.enteredBy:"");
+      if(/sensor/i.test(tr.eventType||"")){ tile="#b48cff"; lbl="CGM"; title = tr.eventType; }
+      else if(/pod|site|cannula/i.test((tr.eventType||"")+(tr.notes||""))){ tile="#b48cff"; lbl="POD"; }
+      else if(+tr.duration>0){ tile="#ff8a8a"; lbl="PAUSE"; }
+      else { tile="#5fd4c4"; lbl="NOTE"; }
+    }
+    return `<div class="row"><div class="tile" style="background:${tile};${lblStyle}">${esc(lbl)}</div><div class="t"><b>${esc(title)}</b><span>${esc(sub)}</span></div><div class="r">${timeStr(e.t)}</div></div>`;
   }).join("");
 }
 function renderHistory(){
@@ -543,16 +710,16 @@ function renderConnections(){
       status:["","Optional"],
       body:`<ol><li><b>Pushover</b>: add <code>pushover</code> to <code>ENABLE</code> and set <code>PUSHOVER_API_TOKEN</code> and <code>PUSHOVER_USER_KEY</code>. Good for sending alarms to Emily too.</li><li><b>IFTTT</b>: add <code>maker</code> to <code>ENABLE</code> and set <code>MAKER_KEY</code>. Nightscout alarms then trigger IFTTT applets, like flashing a smart light.</li><li><b>Home Assistant</b>: add the Nightscout integration with your site URL and a readable token.</li></ol>`},
     {tile:"#b48cff",lbl:"WEB",name:"This app",desc:"Steady reads your site with a token",
-      status: state.source==="live"?["ok","Connected"]:state.source==="error"?["warn","Problem"]:["","Demo mode"],
-      body:`<ol><li>Add <code>cors</code> to <code>ENABLE</code> on your server so a web app on another address can read it.</li><li>Put your site URL and a readable token in Settings.</li><li>On iPhone, open Steady in Safari, tap Share → Add to Home Screen.</li></ol>`}
+      status: state.source==="live"?["ok","Connected"]:state.source==="error"?["warn","Problem"]:["","Not set up"],
+      body:`<ol><li>Add <code>cors</code> to <code>ENABLE</code> on your server so a web app on another address can read it.</li><li>Put your site URL and a token in Settings. Give the token the roles <code>readable, steady-write</code> so Steady can log food and manage your food library (see Settings note).</li><li>On iPhone, open Steady in Safari, tap Share → Add to Home Screen.</li></ol>`}
   ];
   $("connlist").innerHTML = items.map(it=>`<details class="conn"><summary><div class="tile" style="background:${it.tile}">${it.lbl}</div><div class="t"><b>${esc(it.name)}</b><span>${esc(it.desc)}</span></div><span class="badge ${it.status[0]}">${esc(it.status[1])}</span></summary><div class="connbody">${it.body}</div></details>`).join("");
   $("connlist").querySelectorAll("[data-copy]").forEach(b=>b.onclick = async ()=>{ try{ await navigator.clipboard.writeText($(b.dataset.copy).textContent); b.textContent="Copied"; }catch(e){ b.textContent="Select and copy"; } setTimeout(()=>b.textContent="Copy",1600); });
 }
 
 // ---------- settings UI ----------
-function fillForm(){ $("s-demo").checked=S.demo; $("s-url").value=S.url; $("s-token").value=S.token; $("s-units").value=S.units; $("s-refresh").value=String(S.refresh); $("s-low").value=S.low; $("s-high").value=S.high; }
-function readForm(){ return {demo:$("s-demo").checked, url:$("s-url").value.trim(), token:$("s-token").value.trim(), units:$("s-units").value, refresh:+$("s-refresh").value, low:Math.max(50,Math.min(120,+$("s-low").value||70)), high:Math.max(120,Math.min(300,+$("s-high").value||180))}; }
+function fillForm(){ $("s-url").value=S.url; $("s-token").value=S.token; $("s-units").value=S.units; $("s-refresh").value=String(S.refresh); $("s-low").value=S.low; $("s-high").value=S.high; $("s-dia").value=String(S.dia||4); }
+function readForm(){ return {url:$("s-url").value.trim(), token:$("s-token").value.trim(), units:$("s-units").value, refresh:+$("s-refresh").value, low:Math.max(50,Math.min(120,+$("s-low").value||70)), high:Math.max(120,Math.min(300,+$("s-high").value||180)), dia:+$("s-dia").value||4}; }
 function showMsg(ok, text){ const m=$("s-msg"); m.className="msg show "+(ok?"ok":"bad"); m.textContent=text; }
 $("s-test").onclick = async ()=>{
   const f = readForm(); if(!f.url){ showMsg(false,"Enter your Nightscout URL first."); return; }
@@ -564,11 +731,10 @@ $("s-test").onclick = async ()=>{
 };
 $("setform").onsubmit = ev => {
   ev.preventDefault(); const f = readForm();
-  if(f.url){ if(!/^https?:\/\//i.test(f.url)) f.url = "https://"+f.url; f.demo = false; $("s-demo").checked = false; $("s-url").value = f.url; }
-  if(!f.demo && !f.url){ showMsg(false,"Enter your Nightscout URL, or turn demo mode back on."); return; }
+  if(!f.url){ showMsg(false,"Enter your Nightscout URL."); return; }
+  if(!/^https?:\/\//i.test(f.url)) f.url = "https://"+f.url; $("s-url").value = f.url;
   S = f; const stored = saveSettings(S);
-  if(S.demo){ try{ history.replaceState(null,"",location.pathname); }catch(e){} showMsg(true,"Saved. Showing demo data."); }
-  else if(stored){ showMsg(true,"Saved on this phone. Loading your data."); }
+  if(stored){ showMsg(true,"Saved on this phone. Loading your data."); }
   else {
     const q = new URLSearchParams({ns:S.url}); if(S.token) q.set("t",S.token); if(S.units!=="mgdl") q.set("u",S.units);
     try{ history.replaceState(null,"","?"+q.toString()); }catch(e){}
@@ -577,13 +743,171 @@ $("setform").onsubmit = ev => {
   restartTimer(); refresh();
 };
 
+// ---------- food library (Nightscout food collection) ----------
+const GI = {fast:3, medium:2, slow:1};          // Nightscout food "gi": 1 low, 2 medium, 3 high
+const typeFromGi = gi => (+gi===3 ? "fast" : +gi===1 ? "slow" : "medium");
+function foodView(f){ return {id:f._id, name:f.name||"Unnamed", type: FOOD_TYPES[f.foodType] ? f.foodType : typeFromGi(f.gi), carbs:+f.carbs||0, serving: f.servingText || ((f.portion?f.portion+" ":"")+(f.unit||"")).trim(), category:f.category||"", raw:f}; }
+async function loadFoods(){
+  if(!S.url) return;
+  try{ const list = await getJSON("/api/v1/food/"); state.foods = (Array.isArray(list)?list:[]).filter(f=>!f.type || f.type==="food").map(foodView).sort((a,b)=>a.name.localeCompare(b.name)); state.foodsError = null; }
+  catch(e){ state.foodsError = e.message; }
+}
+async function nsWrite(method, path, body){
+  let res;
+  try{ res = await fetch(nsUrl(path), {method, headers:{"Content-Type":"application/json"}, body: body ? JSON.stringify(body) : undefined}); }
+  catch(e){ throw new Error("Couldn't reach your Nightscout site. Check your connection and try again."); }
+  if(res.status===401 || res.status===403){ const err = new Error("perm"); err.perm = true; throw err; }
+  if(!res.ok) throw new Error("Nightscout returned HTTP "+res.status+".");
+  try{ return await res.json(); }catch(e){ return null; }
+}
+const PERM_MSG = "Your Steady token can't change this yet. In Nightscout Admin Tools: add a Role named steady-write with permissions api:treatments:create, api:food:create, api:food:update, api:food:delete. Then set the steady subject's roles to: readable, steady-write";
+function matchFoods(q){
+  q = q.trim().toLowerCase(); if(!q) return [];
+  const words = q.split(/\s+/);
+  return state.foods.filter(f=>{ const h=(f.name+" "+f.category).toLowerCase(); return words.every(w=>h.includes(w)); })
+    .sort((a,b)=>(a.name.toLowerCase().startsWith(q)?0:1)-(b.name.toLowerCase().startsWith(q)?0:1) || a.name.localeCompare(b.name)).slice(0,8);
+}
+function foodRow(f, tag){
+  return `<${tag} class="row" type="button" data-id="${esc(f.id)}"><div class="tile" style="background:#2d2e33;font-size:24px">${FOOD_TYPES[f.type].emoji}</div><div class="t"><b>${esc(f.name)}</b><span>${f.carbs} g carbs${f.serving?" · "+esc(f.serving):""}</span></div><div class="r">${FOOD_TYPES[f.type].label}</div></${tag}>`;
+}
+
+// ----- Foods tab -----
+function renderLibrary(){
+  const q = $("lib-search").value; const list = q.trim() ? matchFoods(q).concat([]) : state.foods;
+  const m = $("lib-msg");
+  if(!S.url){ m.className="msg show bad"; m.textContent="Connect your Nightscout site in Settings first."; $("lib-list").innerHTML=""; return; }
+  if(state.foodsError){ m.className="msg show bad"; m.textContent=state.foodsError; } else { m.className="msg"; }
+  if(!state.foods.length && !state.foodsError){ $("lib-list").innerHTML = `<div class="empty">No foods yet. Tap New food, or save one when you log a meal.</div>`; return; }
+  if(!list.length){ $("lib-list").innerHTML = `<div class="empty">No foods match “${esc(q)}”.</div>`; return; }
+  let html = "", lastCat = null;
+  const sorted = q.trim() ? list : list.slice().sort((a,b)=>((a.category?0:1)-(b.category?0:1)) || (a.category||"").localeCompare(b.category||"") || a.name.localeCompare(b.name));
+  sorted.forEach(f=>{ const c = q.trim() ? null : (f.category||"Other"); if(c!==lastCat && c!==null){ html += `<div class="grouph">${esc(c)}</div>`; lastCat = c; } html += foodRow(f,"button"); });
+  $("lib-list").innerHTML = html;
+  $("lib-list").querySelectorAll("button.row").forEach(b=>b.onclick=()=>openEditor(state.foods.find(f=>f.id===b.dataset.id)));
+}
+$("lib-search").oninput = renderLibrary;
+$("lib-new").onclick = ()=>openEditor(null);
+
+// ----- Food editor -----
+let ed = {type:"medium", food:null};
+function openEditor(f, prefill){
+  ed = {type: f? f.type : (prefill&&prefill.type)||"medium", food:f};
+  $("ed-title").textContent = f ? "Edit food" : "New food";
+  $("ed-name").value = f ? f.name : (prefill&&prefill.name)||"";
+  $("ed-carbs").value = f ? f.carbs : (prefill&&prefill.carbs)||"";
+  $("ed-serving").value = f ? f.serving : "";
+  $("ed-cat").value = f ? f.category : "";
+  $("ed-cats").innerHTML = [...new Set(state.foods.map(x=>x.category).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join("");
+  setPressed("ed-type","type",ed.type); $("ed-delete").hidden = !f;
+  const m=$("ed-msg"); m.className="msg"; m.textContent="";
+  $("ed-scrim").classList.add("open"); $("ed-scrim").setAttribute("aria-hidden","false");
+}
+function closeEditor(){ $("ed-scrim").classList.remove("open"); $("ed-scrim").setAttribute("aria-hidden","true"); }
+$("ed-cancel").onclick = closeEditor;
+$("ed-scrim").addEventListener("click", ev=>{ if(ev.target.id==="ed-scrim") closeEditor(); });
+document.querySelectorAll("#ed-type button").forEach(b=>b.onclick=()=>{ ed.type=b.dataset.type; setPressed("ed-type","type",ed.type); });
+function foodDoc(name, type, carbs, serving, category, base){
+  const m = /^\s*([\d.]+)\s*(.*)$/.exec(serving||"");
+  return Object.assign({}, base||{}, {type:"food", name, category, subcategory:(base&&base.subcategory)||"", carbs, gi:GI[type], foodType:type,
+    portion: m? +m[1] : 1, unit: m? (m[2]||"serving") : (serving||"serving"), servingText: serving||""});
+}
+$("edform").onsubmit = async ev => {
+  ev.preventDefault();
+  const name = $("ed-name").value.trim(), carbs = Math.round((+$("ed-carbs").value||0)*10)/10, serving = $("ed-serving").value.trim(), cat = $("ed-cat").value.trim();
+  const msg = (ok,t)=>{ const m=$("ed-msg"); m.className="msg show "+(ok?"ok":"bad"); m.textContent=t; };
+  if(!name){ msg(false,"Give the food a name."); return; }
+  if(carbs<0 || carbs>300){ msg(false,"Carbs should be between 0 and 300 g."); return; }
+  if(!ed.food && state.foods.some(f=>f.name.toLowerCase()===name.toLowerCase())){ msg(false,"You already have a food called “"+name+"”. Edit that one instead."); return; }
+  $("ed-save").disabled = true;
+  try{
+    if(ed.food) await nsWrite("PUT","/api/v1/food/", foodDoc(name, ed.type, carbs, serving, cat, Object.assign({}, ed.food.raw, {_id:ed.food.id})));
+    else await nsWrite("POST","/api/v1/food/", foodDoc(name, ed.type, carbs, serving, cat));
+    await loadFoods(); closeEditor(); renderLibrary();
+  }catch(err){ msg(false, err.perm ? PERM_MSG : err.message); }
+  finally{ $("ed-save").disabled = false; }
+};
+$("ed-delete").onclick = async ()=>{
+  if(!ed.food) return;
+  const btn = $("ed-delete");
+  if(btn.dataset.confirm!=="1"){ btn.dataset.confirm="1"; btn.textContent="Tap again to delete"; setTimeout(()=>{ btn.dataset.confirm=""; btn.textContent="Delete"; }, 3000); return; }
+  btn.dataset.confirm=""; btn.textContent="Delete";
+  try{ await nsWrite("DELETE","/api/v1/food/"+encodeURIComponent(ed.food.id)); await loadFoods(); closeEditor(); renderLibrary(); }
+  catch(err){ const m=$("ed-msg"); m.className="msg show bad"; m.textContent = err.perm ? PERM_MSG : err.message; }
+};
+
+// ----- Log food sheet -----
+let ff = {type:"medium", min:0, picked:null, servings:1};
+function setPressed(groupId, attr, val){ document.querySelectorAll("#"+groupId+" button").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset[attr]===String(val)))); }
+function updatePicked(){
+  const f = ff.picked; $("ff-picked").hidden = !f; $("ff-savewrap").hidden = !!f;
+  if(!f) return;
+  $("ff-p-emoji").textContent = FOOD_TYPES[f.type].emoji; $("ff-p-name").textContent = f.name;
+  $("ff-p-sub").textContent = f.carbs+" g per "+(f.serving||"serving"); $("ff-serv").textContent = ff.servings;
+  $("ff-carbs").value = Math.round(f.carbs*ff.servings);
+}
+function pickFood(f){ ff.picked = f; ff.servings = 1; ff.type = f.type; setPressed("ff-type","type",f.type); $("ff-food").value = f.name; $("ff-results").innerHTML = ""; updatePicked(); }
+function renderResults(){
+  const q = $("ff-food").value;
+  if(ff.picked && q!==ff.picked.name){ ff.picked = null; updatePicked(); }
+  if(ff.picked){ $("ff-results").innerHTML=""; return; }
+  const list = q.trim() ? matchFoods(q) : state.foods.slice(0,0);
+  $("ff-results").innerHTML = list.map(f=>foodRow(f,"button")).join("");
+  $("ff-results").querySelectorAll("button.row").forEach(b=>b.onclick=()=>pickFood(state.foods.find(f=>f.id===b.dataset.id)));
+}
+$("ff-food").oninput = renderResults;
+$("ff-less").onclick = ()=>{ ff.servings = Math.max(0.5, ff.servings-0.5); updatePicked(); };
+$("ff-more").onclick = ()=>{ ff.servings = Math.min(10, ff.servings+0.5); updatePicked(); };
+function openFood(){
+  ff = {type:"medium", min:0, picked:null, servings:1}; $("foodform").reset(); $("ff-inpod").checked = true; $("ff-save-lib").checked = true;
+  setPressed("ff-type","type","medium"); setPressed("ff-when","min","0"); $("ff-results").innerHTML=""; updatePicked();
+  const m = $("ff-msg"); m.className = "msg"; m.textContent = "";
+  $("scrim").classList.add("open"); $("scrim").setAttribute("aria-hidden","false");
+  loadFoods().then(renderResults);
+  setTimeout(()=>$("ff-food").focus(), 50);
+}
+function closeFood(){ $("scrim").classList.remove("open"); $("scrim").setAttribute("aria-hidden","true"); }
+$("fab").onclick = ()=>{ if(!S.url){ showView("set"); return; } openFood(); };
+$("ff-cancel").onclick = closeFood;
+$("scrim").addEventListener("click", ev=>{ if(ev.target.id==="scrim") closeFood(); });
+document.addEventListener("keydown", ev=>{ if(ev.key==="Escape"){ closeFood(); closeEditor(); } });
+document.querySelectorAll("#ff-type button").forEach(b=>b.onclick=()=>{ ff.type=b.dataset.type; setPressed("ff-type","type",ff.type); });
+document.querySelectorAll("#ff-when button").forEach(b=>b.onclick=()=>{ ff.min=+b.dataset.min; setPressed("ff-when","min",ff.min); });
+$("foodform").onsubmit = async ev => {
+  ev.preventDefault();
+  const food = $("ff-food").value.trim(), carbs = Math.round(+$("ff-carbs").value||0), inPod = $("ff-inpod").checked, T = FOOD_TYPES[ff.type];
+  const msg = (ok,t)=>{ const m=$("ff-msg"); m.className="msg show "+(ok?"ok":"bad"); m.textContent=t; };
+  if(!food){ msg(false,"Search for a food or type what you ate."); return; }
+  if(carbs<0 || carbs>300){ msg(false,"Carbs should be between 0 and 300 g."); return; }
+  const tr = {created_at:new Date(Date.now()-ff.min*MIN).toISOString(), enteredBy:"Steady", food, foodType:T.emoji, absorptionTime:T.min, inPod,
+    notes: T.emoji+" "+food+(ff.picked && ff.servings!==1 ? " ×"+ff.servings : "")+(carbs?" · "+carbs+" g":"")};
+  if(ff.picked){ tr.foodId = ff.picked.id; tr.servings = ff.servings; }
+  if(inPod || !carbs){ tr.eventType = "Note"; if(carbs) tr.foodCarbs = carbs; }
+  else { tr.eventType = "Carb Correction"; tr.carbs = carbs; }
+  $("ff-save").disabled = true;
+  try{
+    await nsWrite("POST","/api/v1/treatments", [tr]);
+    let libNote = "";
+    if(!ff.picked && $("ff-save-lib").checked && !state.foods.some(f=>f.name.toLowerCase()===food.toLowerCase())){
+      try{ await nsWrite("POST","/api/v1/food/", foodDoc(food, ff.type, carbs, "1 serving", "")); }
+      catch(e){ libNote = e.perm ? PERM_MSG : "Logged, but couldn't save it to your foods: "+e.message; }
+    }
+    if(libNote){ msg(false, "Logged. "+libNote); }
+    else closeFood();
+    refresh(); loadFoods();
+  }catch(err){ msg(false, err.perm ? PERM_MSG : err.message); }
+  finally{ $("ff-save").disabled = false; }
+};
+
 // ---------- nav ----------
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".tabs button").forEach(x=>x.removeAttribute("aria-current")); b.setAttribute("aria-current","page");
-  document.querySelectorAll(".view").forEach(v=>v.classList.remove("on")); $("v-"+b.dataset.v).classList.add("on");
-  if(b.dataset.v==="now") renderChart();
+function showView(v){
+  document.querySelectorAll(".tabs button").forEach(x=>{ if(x.dataset.v===v) x.setAttribute("aria-current","page"); else x.removeAttribute("aria-current"); });
+  document.querySelectorAll(".view").forEach(el=>el.classList.remove("on")); $("v-"+v).classList.add("on");
+  document.body.classList.toggle("on-now", v==="now");
+  if(v==="now") renderChart();
+  if(v==="foods"){ renderLibrary(); loadFoods().then(renderLibrary); }
   window.scrollTo(0,0);
-});
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showView(b.dataset.v));
 document.querySelectorAll("#hours button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#hours button").forEach(x=>x.setAttribute("aria-pressed","false")); b.setAttribute("aria-pressed","true");
   state.hours = +b.dataset.h; renderChart();
@@ -593,7 +917,7 @@ let timer=null; function restartTimer(){ clearInterval(timer); timer=setInterval
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && Date.now()-state.lastFetch>30e3) refresh(); });
 setInterval(()=>{ if(state.entries[0]) $("ago").textContent = ago(state.entries[0].date); }, 20e3);
 
-fillForm(); restartTimer(); refresh();
+fillForm(); restartTimer(); refresh(); loadFoods();
 })();
 </script>
 </body>
