@@ -214,15 +214,15 @@ svg.chart{display:block;width:100%;height:220px}
   <!-- SETTINGS -->
   <section class="view" id="v-set" aria-label="Settings">
     <div class="plainhead"><h1>Settings</h1><p>Point Steady at your Nightscout site</p></div>
-    <form class="sec" id="setform" style="margin-top:12px" autocomplete="off">
-      <div class="toggle"><div><b>Demo mode</b><div class="field hint" style="margin:0">Shows sample data. Turn off to use your site.</div></div><input type="checkbox" id="s-demo" aria-label="Demo mode"></div>
+    <form class="sec" id="setform" novalidate style="margin-top:12px" autocomplete="off">
+      <div class="toggle"><div><b>Demo mode</b><div class="field hint" style="margin:0">Shows sample data. Turns off when you save a Nightscout URL.</div></div><input type="checkbox" id="s-demo" aria-label="Demo mode"></div>
       <div class="field">
         <label for="s-url">Nightscout URL</label>
-        <input id="s-url" type="url" inputmode="url" placeholder="https://yoursite.example.com" spellcheck="false">
+        <input id="s-url" type="text" autocapitalize="off" autocorrect="off" inputmode="url" placeholder="https://yoursite.example.com" spellcheck="false">
       </div>
       <div class="field">
         <label for="s-token">Access token</label>
-        <input id="s-token" type="text" placeholder="steady-1a2b3c4d5e6f7a8b" spellcheck="false">
+        <input id="s-token" type="text" autocapitalize="off" autocorrect="off" placeholder="steady-1a2b3c4d5e6f7a8b" spellcheck="false">
         <span class="hint">Make a token with the <b>readable</b> role in Nightscout Admin Tools. Never paste your API_SECRET here.</span>
       </div>
       <div class="two">
@@ -261,8 +261,19 @@ const TREND_WORDS = {DoubleUp:"rising fast",SingleUp:"rising",FortyFiveUp:"risin
 
 // ---------- settings ----------
 const DEFAULTS = {demo:true,url:"",token:"",units:"mgdl",refresh:60,low:70,high:180};
-function loadSettings(){ try{ return Object.assign({},DEFAULTS,JSON.parse(localStorage.getItem("steady.settings")||"{}")); }catch(e){ return Object.assign({},DEFAULTS); } }
-function saveSettings(s){ try{ localStorage.setItem("steady.settings",JSON.stringify(s)); }catch(e){} }
+function loadSettings(){
+  let s = Object.assign({},DEFAULTS);
+  try{ s = Object.assign(s, JSON.parse(localStorage.getItem("steady.settings")||"{}")); }catch(e){}
+  // Fallback for phones that block storage: settings carried in the page address (?ns=...&t=...)
+  try{ const q = new URLSearchParams(location.search);
+    if(q.get("ns")){ s.url = q.get("ns"); s.token = q.get("t")||""; s.demo = false; if(q.get("u")) s.units = q.get("u"); }
+  }catch(e){}
+  if(s.url) s.demo = false;
+  return s;
+}
+function saveSettings(s){
+  try{ localStorage.setItem("steady.settings",JSON.stringify(s)); return localStorage.getItem("steady.settings")===JSON.stringify(s); }catch(e){ return false; }
+}
 let S = loadSettings();
 let state = {entries:[],treatments:[],devicestatus:null,source:"demo",error:null,hours:3,lastFetch:0};
 
@@ -551,7 +562,20 @@ $("s-test").onclick = async ()=>{
   }catch(err){ showMsg(false, err.message); }
   S = keep;
 };
-$("setform").onsubmit = ev => { ev.preventDefault(); const f = readForm(); if(!f.demo && !f.url){ showMsg(false,"Enter your Nightscout URL, or turn demo mode back on."); return; } S = f; saveSettings(S); showMsg(true, S.demo ? "Saved. Showing demo data." : "Saved. Loading your data."); restartTimer(); refresh(); };
+$("setform").onsubmit = ev => {
+  ev.preventDefault(); const f = readForm();
+  if(f.url){ if(!/^https?:\/\//i.test(f.url)) f.url = "https://"+f.url; f.demo = false; $("s-demo").checked = false; $("s-url").value = f.url; }
+  if(!f.demo && !f.url){ showMsg(false,"Enter your Nightscout URL, or turn demo mode back on."); return; }
+  S = f; const stored = saveSettings(S);
+  if(S.demo){ try{ history.replaceState(null,"",location.pathname); }catch(e){} showMsg(true,"Saved. Showing demo data."); }
+  else if(stored){ showMsg(true,"Saved on this phone. Loading your data."); }
+  else {
+    const q = new URLSearchParams({ns:S.url}); if(S.token) q.set("t",S.token); if(S.units!=="mgdl") q.set("u",S.units);
+    try{ history.replaceState(null,"","?"+q.toString()); }catch(e){}
+    showMsg(false,"This phone blocked saving settings, so they're now in this page's address. Remove the old Steady icon, then tap Share → Add to Home Screen again from this page.");
+  }
+  restartTimer(); refresh();
+};
 
 // ---------- nav ----------
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
